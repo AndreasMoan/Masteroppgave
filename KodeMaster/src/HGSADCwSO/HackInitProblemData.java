@@ -34,7 +34,7 @@ public class HackInitProblemData {
         heuristicInstanceParameters.put("Number of offspring in a generation","75");
         heuristicInstanceParameters.put("Education rate", "0,75");
         heuristicInstanceParameters.put("Repair rate", "0,75");
-        heuristicInstanceParameters.put("Number of time periods per hour", "1");
+        heuristicInstanceParameters.put("Number of time periods per hour", "4");
         heuristicInstanceParameters.put("Sailing leg calculations protocol","quick and dirty");
         heuristicInstanceParameters.put("Cost penalty per excessive time period","10");
         heuristicInstanceParameters.put("Target feasible proportion","0,5");
@@ -48,8 +48,8 @@ public class HackInitProblemData {
         heuristicInstanceParameters.put("Capacity constraint violation penalty", "5"); //TODO - sett en god verdi
         heuristicInstanceParameters.put("Duration constraint violation penalty", "5"); //TODO - sett en god verdi
         heuristicInstanceParameters.put("Deadline constraint violation penalty", "5");
-        heuristicInstanceParameters.put("","");
-        heuristicInstanceParameters.put("","");
+        heuristicInstanceParameters.put("Iterations before diversify","300");
+        heuristicInstanceParameters.put("Iterations before stopping","2000");
 
 
 

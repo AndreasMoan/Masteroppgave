@@ -1,17 +1,21 @@
 package HGSADCwSO.implementations;
 
+import HGSADCwSO.ProblemData;
+import HGSADCwSO.protocols.DiversificationProtocol;
+
 import java.util.ArrayList;
 
-public class DiversificationAndStopping {
+public class DiversificationAndStopping implements DiversificationProtocol {
 
     private int iterationsBeforeDiversify, iterationsBeforeStopping; // Number of iterations without improvement before diversifying
     private int diversificationIterationsWithoutImprovement, iterationsWithoutImprovement;
     private ArrayList<Integer> diversificationNumbers;
     private long startTime, maxTime;
+    private ProblemData problemData;
 
-    public DiversificationAndStopping(int iterationsBeforeDiversify, int iterationsBeforeStopping, int maxTime) {
-        this.iterationsBeforeDiversify = iterationsBeforeDiversify;
-        this.iterationsBeforeStopping = iterationsBeforeStopping;
+    public DiversificationAndStopping(ProblemData problemData) {
+        this.iterationsBeforeDiversify = problemData.getHeuristicParameterInt("Iterations before diversify");
+        this.iterationsBeforeStopping = problemData.getHeuristicParameterInt("Iterations before stopping");
         this.diversificationIterationsWithoutImprovement = 0;
         this.iterationsWithoutImprovement = 0;
         this.diversificationNumbers = new ArrayList<Integer>(); //iteration numbers where diversification is performed
@@ -22,7 +26,7 @@ public class DiversificationAndStopping {
             this.maxTime = Long.MAX_VALUE;
         }
         else {
-            this.maxTime = maxTime;
+            this.maxTime = problemData.getHeuristicParameterInt("Max time");
         }
     }
 

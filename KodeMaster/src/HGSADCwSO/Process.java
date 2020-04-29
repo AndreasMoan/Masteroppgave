@@ -2,11 +2,7 @@ package HGSADCwSO;
 
 import HGSADCwSO.implementations.*;
 import HGSADCwSO.implementations.DAG.FitnessEvaluationDAG;
-import HGSADCwSO.protocols.EducationProtocol;
-import HGSADCwSO.protocols.FitnessEvaluationProtocol;
-import HGSADCwSO.protocols.InitialPopulationProtocol;
-import HGSADCwSO.protocols.ParentSelectionProtocol;
-import HGSADCwSO.protocols.ReproductionProtocol;
+import HGSADCwSO.protocols.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +18,8 @@ public class Process {
     private FitnessEvaluationProtocol fitnessEvaluationProtocol;
     private ReproductionProtocol reproductionProtocol;
     private PenaltyAdjustmentProtocol penaltyAdjustmentProtocol;
+    private DiversificationProtocol diversificationProtocol;
+    private SurvivorSelectionProtocol survivorSelectionProtocol;
 
     private int processIteration;
     private HashMap<Integer, ArrayList<Individual>> feasibleSubPopulationByIteration = new HashMap<Integer, ArrayList<Individual>>();
@@ -43,8 +41,7 @@ public class Process {
     }
 
     public Individual mate(ArrayList<Individual> parents) {
-        Individual kid = reproductionProtocol.crossover(parents);
-        return kid;
+        return reproductionProtocol.crossover(parents);
     }
 
     public void repair(Individual individual, double probability) {
@@ -81,6 +78,16 @@ public class Process {
         selectPenaltyAdjustmentProtocol();
         selectEducationProtocol();
         selectReproductionProtocol();
+        selectDiversificationProtocol();
+        selectSurvivorSelectionProtocol();
+    }
+
+    private void selectSurvivorSelectionProtocol(){
+        survivorSelectionProtocol = new SurvivorSelectionStandard(problemData);
+    }
+
+    private void selectDiversificationProtocol() {
+        diversificationProtocol = new DiversificationAndStopping(problemData);
     }
 
     private void selectPenaltyAdjustmentProtocol() {
@@ -145,14 +152,17 @@ public class Process {
         }
     }
 
-    public void updateIterationsSinceImprovementCounter(boolean isImprovingSolution) {
-    }
-
     public void adjustPenaltyParameters(ArrayList<Individual> feasiblePopulation, ArrayList<Individual> infeasiblePopulation) {
+        ArrayList<Individual> entirePopulation = Utilities.getAllElements(feasiblePopulation, infeasiblePopulation);
+        penaltyAdjustmentProtocol.adjustPenalties(entirePopulation, fitnessEvaluationProtocol);
     }
 
     public boolean isDiversifyIteration() {
-        return false;
+        return diversificationProtocol.isDiversifyIteration();
+    }
+
+    public boolean isStoppingIteration() {
+        return diversificationProtocol.isStoppingIteration();
     }
 
     public void recordRunStatistics(int iteration, ArrayList<Individual> feasiblePopulation, ArrayList<Individual> infeasiblePopulation, Individual bestFeasibleIndividual) {
@@ -165,10 +175,23 @@ public class Process {
     }
 
     public void addDiversityDistance(Individual kid) {
+        fitnessEvaluationProtocol.addDiversityDistance(kid);
     }
 
     public void updateBiasedFitness(ArrayList<Individual> feasiblePopulation, ArrayList<Individual> infeasiblePopulation) {
+        ArrayList<Individual> entirePopulation = Utilities.getAllElements(feasiblePopulation, infeasiblePopulation);
+        fitnessEvaluationProtocol.updateBiasedFitness(entirePopulation);
     }
 
+    public ArrayList<Individual> getClones(ArrayList<Individual> subpopulation){
+        return survivorSelectionProtocol.getClones(subpopulation, fitnessEvaluationProtocol);
+    }
 
+    public FitnessEvaluationProtocol getFitnessEvaluationProtocol() {
+        return fitnessEvaluationProtocol;
+    }
+
+    public void updateIterationsSinceImprovementCounter(boolean improvingSolutionFound) {
+        diversificationProtocol.updateIterationsSinceImprovementCounter(improvingSolutionFound);
+    }
 }
