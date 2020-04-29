@@ -13,6 +13,8 @@ public class HGSADCwSOmain {
     private ProblemData problemData;
     private Process process;
 
+    private double bestCost = Double.POSITIVE_INFINITY;
+
     private String[] args;
 
     private int iteration;
@@ -71,7 +73,7 @@ public class HGSADCwSOmain {
     private void runEvolutionaryLoop() {
         process.recordRunStatistics(0, feasiblePopulation, infeasiblePopulation, bestFeasibleIndividual);
         while (!stoppingCriterion()) {
-            System.out.println("Iteration " + iteration);
+            System.out.println("Iteration " + iteration + "                                                          Best cost thus far: " + bestCost);
             evolve();
             process.recordRunStatistics(iteration, feasiblePopulation, infeasiblePopulation, bestFeasibleIndividual);
             iteration++;
@@ -89,6 +91,9 @@ public class HGSADCwSOmain {
         process.educate(kid);
         process.repair(kid);
         boolean isImprovingSolution = addToSubpopulation(kid);
+        if (kid.getFitness() < bestCost) {
+            bestCost = kid.getFitness();
+        }
         process.updateIterationsSinceImprovementCounter(isImprovingSolution);
         process.adjustPenaltyParameters(feasiblePopulation, infeasiblePopulation);
         /*
@@ -126,6 +131,8 @@ public class HGSADCwSOmain {
 
     public boolean addToSubpopulation(Individual kid) {
         boolean isImprovingSolution = false;
+        process.evaluate(kid);
+        System.out.println(kid.getGenotype().getVesselTourChromosome());
 
         if (kid.isFeasible()) {
             if ((bestFeasibleIndividual == null) || (kid.getFitness() < bestFeasibleIndividual.getFitness())) {
@@ -156,8 +163,6 @@ public class HGSADCwSOmain {
     private void checkSubpopulationSize(ArrayList<Individual> subpopulation, ArrayList<Individual> otherSubpopulation) {
         int maxPopulationSize = problemData.getHeuristicParameterInt("Population size")
                 + problemData.getHeuristicParameterInt("Number of offspring in a generation");
-
-        System.out.println(maxPopulationSize);
 
         if (subpopulation.size() + otherSubpopulation.size() >= maxPopulationSize) {
             genocide(subpopulation, 3.0/4.0);

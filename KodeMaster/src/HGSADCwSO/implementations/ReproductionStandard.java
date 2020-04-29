@@ -23,10 +23,8 @@ public class ReproductionStandard implements ReproductionProtocol {
 
     public Individual crossover(ArrayList<Individual> parents) {
 
-        Set<Integer> allOrders = new HashSet<Integer>();
-        for (int i = 0; i < problemData.getOrdersByNumber().size(); i++) {
-            allOrders.add(i); //lager denne én mer enn
-        }
+        //lager denne én mer enn
+        Set<Integer> allOrders = new HashSet<Integer>(problemData.getOrdersByNumber().keySet());
 
         // STEP 0: Inheritance rule
         int nVessels = problemData.getVessels().size();

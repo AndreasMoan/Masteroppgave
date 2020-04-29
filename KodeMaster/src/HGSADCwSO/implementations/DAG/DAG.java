@@ -1,15 +1,17 @@
 package HGSADCwSO.implementations.DAG;
 
+import HGSADCwSO.Order;
 import HGSADCwSO.ProblemData;
 
 import java.util.*;
 
-import static java.lang.Math.max;
+import static java.lang.Math.*;
 
 public class DAG {
 
     private double shortestPathCost;
     private double shortestFeasiblePathCost;
+    private boolean feasibility;
 
     private ArrayList<Integer> voyage;
     private ArrayList<Integer> voyageWithDepot;
@@ -23,24 +25,50 @@ public class DAG {
     private double maxSpeedWS3;
     private double minSpeed;
     private int vesselReturnTime;
+    private double multiplier;
+    private double timePerHiv;
+    private double speedImpactWS2;
+    private double speedImpactWS3;
+    private double idlingConsumption;
+    private double servicingConsumption;
+
+    private HashMap<Integer, Order> orderByNumber;
+
 
     public DAG(ArrayList<Integer> voyage, int vesselReturnTime, ProblemData problemData) {
         this.voyage = voyage;
+        // System.out.println(voyage);
         this.problemData = problemData;
         this.graph = new HashMap<Integer, HashMap<Integer, Node>>();
 
         createVoyageWithDepot();
 
-        this.timePeriodLength = this.problemData.getHeuristicParameterDouble("Length of time period");
         this.maxSpeed = this.problemData.getProblemInstanceParameterDouble("Max speed");
         this.minSpeed = this.problemData.getProblemInstanceParameterDouble("Min speed");
-        this.maxSpeedWS2 = maxSpeed - problemData.getProblemInstanceParameterDouble("Impact on sailing from weather state 2");
-        this.maxSpeedWS3 = maxSpeed - problemData.getProblemInstanceParameterDouble("Impact on sailing from weather state 3");
+        this.speedImpactWS2 = problemData.getProblemInstanceParameterDouble("Impact on sailing from weather state 2");
+        this.speedImpactWS3 = problemData.getProblemInstanceParameterDouble("Impact on sailing from weather state 3");
+        this.idlingConsumption = problemData.getProblemInstanceParameterDouble("Idling consumption");
+        this.servicingConsumption = problemData.getProblemInstanceParameterDouble("Servicing consumption");
+        this.maxSpeedWS2 = maxSpeed - speedImpactWS2;
+        this.maxSpeedWS3 = maxSpeed - speedImpactWS3;
+        this.timePerHiv = problemData.getProblemInstanceParameterDouble("Time per hiv");
         this.vesselReturnTime = vesselReturnTime;
+        this.multiplier = this.problemData.getHeuristicParameterDouble("Number of time periods per hour");
+        this.timePeriodLength = 1/multiplier;
+        
 
-        buildGraph();
-        doDijkstra();
-        setCost();
+        this.orderByNumber = problemData.getOrdersByNumber();
+
+        if (voyage.size() == 0) {
+            shortestPathCost = 0;
+            shortestFeasiblePathCost = 0;
+        }
+        else {
+            buildGraph();
+            doDijkstra();
+            setCost();
+            setFeasibility();
+        }
     }
 
     private void createVoyageWithDepot(){
@@ -49,169 +77,216 @@ public class DAG {
         voyageWithDepot.add(0);
     }
 
-    private void buildGraph(){
 
-        System.out.println("___________________________________________________");
+    //--------------------------------------- BUILD GRAPH ----------------------------------------
+
+
+
+    private void buildGraph(){
 
         for (int i = 0; i < voyageWithDepot.size(); i++) {
             graph.put(i, new HashMap<Integer, Node>());
         }
 
         graph.get(0).put(0, new Node(0,0));
+        graph.get(0).get(0).setBestCost(0);
 
-        for (int j = 0; j < voyageWithDepot.size()-1; j++ ) {
+        for (int j = 0; j < voyageWithDepot.size() - 1; j++ ) {
 
+            // System.out.println("------------------- 1 --------------------");
 
             for (int time : graph.get(j).keySet()){
-                buildEdgesFromNode(graph.get(j).get(time), voyageWithDepot.get(j + 1));
+
+                // System.out.println("-------------------------------- 2 -------------------------------");
+                buildEdgesFromNode(graph.get(j).get(time), voyageWithDepot.get(j + 1), j);
             }
         }
     }
 
-    private void buildEdgesFromNode(Node node, int destinationOrder) {
-        double distance = problemData.getDistanceByIndex(problemData.getInstallationNumberByOrderNumber(node.getOrderNumber()),problemData.getInstallationNumberByOrderNumber(destinationOrder));
-        double multiplier = 1/timePeriodLength;
-        double startTime = node.getTime()/multiplier;
-
-        double earliestTheoreticalArrivalTime = distance/maxSpeed;
-        double latestArrivalTime = distance/minSpeed;
+    private void buildEdgesFromNode(Node node, int destinationOrderNumber, int legNumber) {
 
 
-        double arrivalTime = latestArrivalTime;
-        while (arrivalTime <= latestArrivalTime) {
+        double distance = problemData.getDistanceByIndex(problemData.getInstallationNumberByOrderNumber(node.getOrderNumber()),problemData.getInstallationNumberByOrderNumber(destinationOrderNumber));
 
-            double consumption = 0;
+        int nodeStartTime = node.getTime();
+        double realStartTime = convertNodeTimeToRealTime(nodeStartTime);
 
-            double[] sailingInfo = evaluateSailing(startTime, distance, arrivalTime);
+        // System.out.println("From node Iteration  -  order number: " +  node.getOrderNumber());
 
-            double speed_ = sailingInfo[0];
-            double timeWS3 = sailingInfo[1];
-            double timeWS2 = sailingInfo[2];
 
-            if (speed_ > maxSpeed) {
-                break;
+        int earliestTheoreticalEndTime = nodeStartTime + (int) ceil((distance/maxSpeed + problemData.getDemandByOrderNumber(destinationOrderNumber)*timePerHiv)*multiplier);
+        int latestTheoreticalEndTime = nodeStartTime + (int) floor((distance/minSpeed + problemData.getDemandByOrderNumber(destinationOrderNumber)*timePerHiv)*multiplier);
+
+        // System.out.println("ETET : " + earliestTheoreticalEndTime);
+        // System.out.println("LTET : " + latestTheoreticalEndTime);
+
+        int finServicingTime = earliestTheoreticalEndTime;
+
+        boolean continue_ = true;
+        while (/*continue_ && */ finServicingTime <= latestTheoreticalEndTime ) {
+
+            // System.out.println("Edge creation iteration, ");
+            
+            finServicingTime = getEarliestFeasibleSercivingFinishingTime(finServicingTime , destinationOrderNumber);
+
+            // System.out.println("Fin servicing time: " + finServicingTime);
+
+            double[] serviceInfo = servicingCalculations(finServicingTime, destinationOrderNumber);
+
+            double servicingCost = serviceInfo[0];
+            double finIdlingTime = serviceInfo[1];
+
+            if (!isArrivalPossible(realStartTime, distance, finIdlingTime)) {
+                finServicingTime++;
+                continue;
             }
 
-            consumption += calculateConsumptionInWeatherState(speed_, timeWS3, 3);
-            consumption += calculateConsumptionInWeatherState(speed_, timeWS2, 2);
-            consumption += calculateConsumptionInWeatherState(speed_, arrivalTime - startTime - timeWS3 - timeWS2, 0);
+            double[] idlingNeededInfo = isIdlingNeeded(realStartTime, distance, finIdlingTime);
 
-            double[] idlingInfo = idlingCalculation(arrivalTime, destinationOrder);
+            continue_ = (!(idlingNeededInfo[0] >= 0));
 
-            consumption += idlingInfo[0];
+            double[] idlingInfo = idlingCalculations(idlingNeededInfo[1], finIdlingTime);
 
-            double[] servicingInfo = servicingCalculations(idlingInfo[1], destinationOrder);
+            double idlingCost = idlingInfo[0];
+            double finSailingTime = idlingInfo[1];
 
-            consumption += servicingInfo[0];
-            double endTime = servicingInfo[1];
-            if ((endTime*multiplier)%1 != 0) {
-                endTime = Math.ceil(endTime*multiplier)/multiplier;
-            }
+            double[] timeInAllWeatherStates = getTimeInAllWS(realStartTime, convertNodeTimeToRealTime(finServicingTime));
+
+            double adjustedAverageSpeed = calculateAdjustedAverageSpeed(timeInAllWeatherStates, distance);
+
+            double sailingCost = sailingCalculations(timeInAllWeatherStates, adjustedAverageSpeed);
 
             Node childNode;
 
-            if (!graph.get(voyage.indexOf(node.getOrderNumber())).containsKey(((int)Math.round(node.getTime()*multiplier)))) {
-                childNode = new Node((int) Math.round(endTime*multiplier), destinationOrder);
+            if (isNodeInGraph(legNumber + 1, finServicingTime)) {
+                childNode = graph.get(legNumber + 1).get(finServicingTime);
             }
             else {
-                childNode = graph.get(voyage.indexOf(node.getOrderNumber())).get(((int)Math.round(node.getTime()*multiplier)));
+                childNode = new Node(finServicingTime, destinationOrderNumber);
+                graph.get(legNumber + 1).put(finServicingTime, childNode);
             }
 
+            double edgeCost = sailingCost + idlingCost + servicingCost;
 
-            node.addChildEdge(new Edge(node, childNode, consumption));
+            // System.out.println("Fin servicing time: " + finServicingTime);
 
-            arrivalTime += timePeriodLength;
+            // System.out.println("EDGE COST IS EQUAL TO: " + edgeCost);
+
+            Edge currEdge = new Edge(node, childNode, edgeCost);
+
+            childNode.addParentEdge(currEdge);
+            node.addChildEdge(currEdge);
+
+            finServicingTime++;
         }
     }
-
-    private double calculateConsumptionInWeatherState(double speed, double duration, int weatherState){
-        if (weatherState == 3 && speed >= maxSpeedWS3) {
-            return duration*cunsumptionFunction(maxSpeedWS3);
-        }
-        else if (weatherState == 2 && speed >= maxSpeedWS2) {
-            return duration*cunsumptionFunction(maxSpeedWS2);
-        }
-        else return duration*cunsumptionFunction(speed);
+    
+    private double convertNodeTimeToRealTime(int nodeTime) {
+        return nodeTime/multiplier;
+    }
+    
+    private int convertRealTimeToNodeTimeFloor(double time) {
+        return (int) floor(time/multiplier);
     }
 
-    private double cunsumptionFunction(double speed) {
-        return (0.8125*speed*speed-13.00*speed+72.75);
-    }
+    private boolean isServicePossible(int finServicingNodeTime, int destinationOrder) {
 
-    private double[] idlingCalculation(double time, int orderNumber) { //TODO: fix so that this function also accounts for closing time
-        double consumptionFactor = problemData.getProblemInstanceParameterDouble("Consumption factor idling");
+        // System.out.println("Service possible check");
 
-        if (problemData.getWeatherStateByHour().get((int)time) != 3){
-            return new double[] {0, time};
-        }
-        else {
-            double consumption = 0;
-            int i = (int)Math.ceil(time);
-            while (problemData.getWeatherStateByHour().get(i) == 3) {
-                i ++;
-                consumption += consumptionFactor;
+        double realTime = convertNodeTimeToRealTime(finServicingNodeTime);
+
+        double servicingTimeLeft = problemData.getDemandByOrderNumber(destinationOrder) * timePerHiv;
+
+        while (servicingTimeLeft - 1 / problemData.getWeatherImpactByHour((int) realTime) > 0) {
+            if (problemData.getWeatherStateByHour().get((int) realTime) == 3) {
+                return false;
             }
-            return new double[] {consumption, i};
+            if (realTime % 1 > 0) {
+                realTime = floor(realTime);
+                servicingTimeLeft -= realTime % 1 / problemData.getWeatherImpactByHour((int) floor(realTime));
+            } else {
+                realTime--;
+                servicingTimeLeft -= 1 / problemData.getWeatherImpactByHour((int) floor(realTime));
+            }
         }
+
+        return true;
     }
 
-    private double[] servicingCalculations(double time, int order) {
-        double servicingTimeLeft = problemData.getOrdersByNumber().get(order).getDemand()*problemData.getHeuristicParameterDouble("Time per Hiv");
-        double consumptionFactor = problemData.getProblemInstanceParameterDouble("Consumption factor servicing");
+    private int getEarliestFeasibleSercivingFinishingTime(int finServicingTime, int destinationOrderNumber) {
+        int earliestFeasibleSercivingFinishingTime = finServicingTime;
+        if (!isServicePossible(finServicingTime, destinationOrderNumber)) {
+            earliestFeasibleSercivingFinishingTime = getEarliestFeasibleSercivingFinishingTime(finServicingTime +1, destinationOrderNumber);
+        }
+        return earliestFeasibleSercivingFinishingTime;
+    } //TODO fix bug: How do we deal with long periods of bad weather? How long waiting do we accept?
 
+    private double[] servicingCalculations(int time, int order) {
+        
+        double realTime = convertNodeTimeToRealTime(time);
+        double servicingTimeLeft = problemData.getDemandByOrderNumber(order)*timePerHiv;
+        
         double consumption = 0;
 
-        while (servicingTimeLeft -1/problemData.getWeatherImpactByHour((int)Math.floor(time)) > 0) {
-            if (time - Math.floor(time) > 0) {
-                consumption += consumptionFactor * (time - Math.floor(time)) * problemData.getWeatherImpactByHour((int) Math.floor(time));
-                servicingTimeLeft -= (1 - (time - Math.floor(time))) / problemData.getWeatherImpactByHour((int) Math.floor(time));
-                time = Math.ceil(time);
+        while (servicingTimeLeft -1/problemData.getWeatherImpactByHour((int)floor(realTime)) > 0) {
+            if (realTime%1 > 0) {
+                consumption += servicingConsumption * (realTime%1 * problemData.getWeatherImpactByHour((int) floor(realTime)));
+                servicingTimeLeft -= (1 - (realTime%1) / problemData.getWeatherImpactByHour((int) floor(realTime)));
+                realTime = floor(realTime);
             } else {
-                consumption += consumptionFactor * problemData.getWeatherImpactByHour((int) Math.floor(time));
-                servicingTimeLeft -= 1 / problemData.getWeatherImpactByHour((int) Math.floor(time));
-                time++;
+                consumption += servicingConsumption * problemData.getWeatherImpactByHour((int) realTime - 1);
+                servicingTimeLeft -= 1 / problemData.getWeatherImpactByHour((int) realTime - 1);
+                realTime--;
             }
         }
         if (servicingTimeLeft > 0){
-            consumption += consumptionFactor*servicingTimeLeft*problemData.getWeatherImpactByHour((int)Math.floor(time));
-            time += servicingTimeLeft;
+            consumption += servicingConsumption*servicingTimeLeft*problemData.getWeatherImpactByHour((int) realTime - 1);
+            realTime -= servicingTimeLeft;
         }
 
-        return new double[] {consumption, time};
+        return new double[] {consumption, realTime};
     }
 
-    private double[] evaluateSailing(double startTime, double distance, double arrivalTime){
-        double speed = distance/(arrivalTime - startTime);
+    private boolean isArrivalPossible(double startTime, double distance, double finIdlingRealTime) {
 
-        // First loop for W = 3
+        double[] tiws = getTimeInAllWS(startTime,finIdlingRealTime);
 
-        double durationWS3 = getTimeInWS(startTime, arrivalTime, 3);
-        double durationWS2 = getTimeInWS(startTime, arrivalTime, 2);
+        double maxDistance = tiws[0]*maxSpeed + tiws[1]*maxSpeedWS2 + tiws[2]*maxSpeedWS3;
 
-        if (durationWS2 + durationWS3 == arrivalTime - startTime && speed > (durationWS2*maxSpeedWS2 + durationWS3*maxSpeedWS3)/(durationWS2 + durationWS3)) {
-            speed = maxSpeed+1;
+        if (maxDistance >= distance) {
+            return true;
         }
 
-        else {
-            if (speed > maxSpeedWS3) {
-                speed += (durationWS3 * (speed - maxSpeedWS3)) / (arrivalTime - startTime - durationWS3);
-            }
+        return false;
+    }
 
 
-            if (speed > maxSpeedWS3) {
-                speed += (durationWS2 * (speed - maxSpeedWS2)) / (arrivalTime - startTime - durationWS2 - durationWS3);
-            }
+    private double[] isIdlingNeeded(double startTime, double distance, double finIdlingRealTime) {
+
+        double longestSailingTime = distance/minSpeed;
+
+        if (longestSailingTime >= finIdlingRealTime - startTime) {
+            return new double[] {-1.0 , 0};
         }
+        return new double[] {1, finIdlingRealTime - longestSailingTime - startTime};
+    }
 
-        return new double[] {speed, durationWS3, durationWS2};
+    private double[] idlingCalculations(double idlingTime, double finIdlingTime) {
+        return new double [] {idlingTime*idlingConsumption , finIdlingTime - idlingTime};
+    }
 
+    private double[] getTimeInAllWS(double t1, double t2) {
+        double tiws3 = getTimeInWS(t1, t2, 3);
+        double tiws2 = getTimeInWS(t1, t2, 2);
+        double tiw01 = t2 - t1 - tiws3 - tiws2;
+        return new double[] {tiw01, tiws2, tiws3};
     }
 
     private double getTimeInWS(double t1, double t2, int weatherState){
         double time = 0;
         time += isWeatherState(weatherState, (int) t1) ? 1 - t1%1 : 0;
         time += isWeatherState(weatherState, (int) t2) ? t2%1 : 0;
-        for (int i = (int) Math.ceil(t1); i < (int) t2; i++ ){
+        for (int i = (int) ceil(t1); i < (int) t2; i++ ){
             time += isWeatherState(weatherState, i) ? 1 : 0;
         }
         return time;
@@ -221,10 +296,59 @@ public class DAG {
         return problemData.getWeatherStateByHour().get(hour) == weatherState;
     }
 
+    private double calculateAdjustedAverageSpeed(double[] timeInAllWeatherStates, double distance) {
+        double durationWS3 = timeInAllWeatherStates[2];
+        double durationWS2 = timeInAllWeatherStates[1];
+        double durationWS01 = timeInAllWeatherStates[0];
+        double duration = durationWS01 + durationWS2 + durationWS3;
+
+        double speed = distance/(duration);
+
+        if (durationWS01 == 0 && speed > (durationWS2*maxSpeedWS2 + durationWS3*maxSpeedWS3)/(durationWS2 + durationWS3)) {
+            speed = maxSpeed+1;
+        }
+
+        else {
+            if (speed > maxSpeedWS3) {
+                speed += (durationWS3 * (speed - maxSpeedWS3)) / (durationWS01 + durationWS2);
+            }
+
+            if (speed > maxSpeedWS3) {
+                speed += (durationWS2 * (speed - maxSpeedWS2)) / (durationWS01);
+            }
+        }
+
+        return speed;
+    }
+
+    private double sailingCalculations(double[] timeInAllWeatherStates, double adjustedAverageSpeed) {
+        double cost = 0;
+        cost += timeInAllWeatherStates[0]*consumptionFunction(adjustedAverageSpeed);
+        cost += (adjustedAverageSpeed < maxSpeedWS2) ? timeInAllWeatherStates[1]*consumptionFunction(adjustedAverageSpeed + speedImpactWS2) : timeInAllWeatherStates[1]*consumptionFunction(maxSpeed);
+        cost += (adjustedAverageSpeed < maxSpeedWS3) ? timeInAllWeatherStates[2]*consumptionFunction(adjustedAverageSpeed + speedImpactWS3) : timeInAllWeatherStates[2]*consumptionFunction(maxSpeed);
+        return cost;
+    }
+
+    private double consumptionFunction(double speed) {
+        return (0.8125*speed*speed-13.00*speed+72.75);
+    }
+
+    private boolean isNodeInGraph(int columnNumber, int finServicingTime) {
+        return graph.get(columnNumber).containsKey(finServicingTime);
+    }
+
+    //--------------------------------------- DIJKSTRA ----------------------------------------
 
     private void doDijkstra(){
+
+        // System.out.println("================================== DIJKSTRA ======================================");
+
         for (int i = 0; i < graph.size(); i++) {
+            // System.out.println("1 ------");
             for (Map.Entry<Integer, Node> pair : graph.get(i).entrySet()){
+                // System.out.println("2");
+                // System.out.println(pair.getValue().getChildEdges().size());
+
                 expand(pair.getValue());
             }
         }
@@ -232,7 +356,7 @@ public class DAG {
             double nodeTime = entry.getValue().getTime();
             double nodeCost = entry.getValue().getBestCost();
             if (nodeTime > vesselReturnTime) {
-                entry.getValue().setBestCost(nodeCost - (nodeTime - vesselReturnTime)*problemData.getHeuristicParameterDouble("Cost penalty per excessive time period") );
+                entry.getValue().setBestCost(nodeCost + (nodeTime - vesselReturnTime)*problemData.getHeuristicParameterDouble("Cost penalty per excessive time period") );
                 entry.getValue().setFeasibility(false);
                 }
             else {
@@ -243,39 +367,68 @@ public class DAG {
 
     private void expand(Node node) {
         for (Edge childEdge : node.getChildEdges()){
-            if (childEdge.getChildNode().getBestCost() < node.getBestCost() + childEdge.getCost()) {
+            // System.out.println("3 !!!!");
+            if (childEdge.getChildNode().getBestCost() > node.getBestCost() + childEdge.getCost()) {
                 childEdge.getChildNode().setBestCost(node.getBestCost() + childEdge.getCost());
                 childEdge.getChildNode().setBestParentEdge(childEdge);
+                // System.out.println("Parent node cost: " + node.getBestCost() + ", Edge cost: " + childEdge.getCost() + ", Child node cost: " + childEdge.getChildNode().getBestCost());
             }
         }
     }
 
-    private void setCost() {
-        if (graph.get(graph.size()).containsKey(vesselReturnTime)) {
-            shortestPathCost = graph.get(graph.size()-1).get(vesselReturnTime).getBestCost();
 
+    //--------------------------------------- SET COST ----------------------------------------
+
+
+
+    private void setCost() {
+
+        for (int n = 0; n < graph.size(); n++) {
+            // System.out.println("Size of column number " + n + " is : " + graph.get(n).size());
+            for ( int k : graph.get(n).keySet()) {
+                // System.out.println("Node time: " + graph.get(n).get(k).getTime() + " | Node order number; " + graph.get(n).get(k).getOrderNumber() + " | Node cost: " + graph.get(n).get(k).getBestCost());
+            }
         }
 
         double leastFeasibleCost = Double.POSITIVE_INFINITY;
-        double leastInfeasileCost = Double.POSITIVE_INFINITY;
+        double leastInfeasibleCost = Double.POSITIVE_INFINITY;
 
-        for ( Map.Entry<Integer, Node> entry : graph.get(graph.size()).entrySet()){
+        if (graph.get(graph.size()-1).containsKey(vesselReturnTime)) {
+            leastFeasibleCost = graph.get(graph.size()-1).get(vesselReturnTime).getBestCost();
+        }
+
+        for ( Map.Entry<Integer, Node> entry : graph.get(graph.size()-1).entrySet()){
 
             boolean nodeFeasibility = entry.getValue().getFeasibility();
             double nodeCost = entry.getValue().getBestCost();
 
-            if (nodeCost < leastFeasibleCost || nodeCost < leastInfeasileCost) {
-                if (nodeFeasibility) {
+            if (nodeFeasibility) {
+                if (nodeCost < leastFeasibleCost) {
                     leastFeasibleCost = nodeCost;
                 }
-                else {
-                    leastInfeasileCost = nodeCost;
+            }
+            else {
+                if (nodeCost < leastInfeasibleCost) {
+                    leastInfeasibleCost = nodeCost;
                 }
             }
         }
-        shortestPathCost = max(leastFeasibleCost, leastInfeasileCost);
+
+        // System.out.println("LFC : " + leastFeasibleCost);
+        // System.out.println("LIC : " + leastInfeasibleCost);
+
+        shortestPathCost = max(leastFeasibleCost, leastInfeasibleCost);
         shortestFeasiblePathCost = leastFeasibleCost;
     }
+
+    //--------------------------------------- SET FEASIBILITY ----------------------------------------
+
+    public void setFeasibility() {
+        this.feasibility = shortestFeasiblePathCost < Double.POSITIVE_INFINITY;
+    }
+
+
+    //--------------------------------------- GET  ----------------------------------------
 
     public double getShortestPathCost(){
         return shortestPathCost;
@@ -283,5 +436,9 @@ public class DAG {
 
     public double getShortestFeasiblePathCost() {
         return shortestFeasiblePathCost;
+    }
+
+    public boolean getFeasibility() {
+        return feasibility;
     }
 }

@@ -1,10 +1,7 @@
 package HGSADCwSO;
 
-import HGSADCwSO.implementations.EducationStandard;
-import HGSADCwSO.implementations.FitnessEvaluation;
-import HGSADCwSO.implementations.InitialPopulationStandard;
-import HGSADCwSO.implementations.ParentsSelectionBinaryTournament;
-import HGSADCwSO.implementations.ReproductionStandard;
+import HGSADCwSO.implementations.*;
+import HGSADCwSO.implementations.DAG.FitnessEvaluationDAG;
 import HGSADCwSO.protocols.EducationProtocol;
 import HGSADCwSO.protocols.FitnessEvaluationProtocol;
 import HGSADCwSO.protocols.InitialPopulationProtocol;
@@ -24,6 +21,8 @@ public class Process {
     private EducationProtocol educationProtocol;
     private FitnessEvaluationProtocol fitnessEvaluationProtocol;
     private ReproductionProtocol reproductionProtocol;
+    private PenaltyAdjustmentProtocol penaltyAdjustmentProtocol;
+
     private int processIteration;
     private HashMap<Integer, ArrayList<Individual>> feasibleSubPopulationByIteration = new HashMap<Integer, ArrayList<Individual>>();
     private HashMap<Integer, ArrayList<Individual>> infeasibleSubPopulationByIteration = new HashMap<Integer, ArrayList<Individual>>();
@@ -62,6 +61,10 @@ public class Process {
         }
     }
 
+    public void evaluate(Individual individual) {
+        fitnessEvaluationProtocol.evaluate(individual);
+    }
+
     public void repair(Individual individual) {
         double probability = problemData.getHeuristicParameterDouble("Repair rate");
         repair(individual, probability);
@@ -75,8 +78,13 @@ public class Process {
         selectFitnessEvaluationProtocol();
         selectInitialPopulationProtocol();
         selectParentSelectionProtocol();
+        selectPenaltyAdjustmentProtocol();
         selectEducationProtocol();
         selectReproductionProtocol();
+    }
+
+    private void selectPenaltyAdjustmentProtocol() {
+        penaltyAdjustmentProtocol = new PenaltyAdjustmentProtocol(problemData);
     }
 
     private void selectInitialPopulationProtocol() {
@@ -104,7 +112,7 @@ public class Process {
     private void selectEducationProtocol(){
         switch (problemData.getHeuristicParameters().get("Education protocol")) {
             case "cost":
-                educationProtocol = new EducationStandard(problemData, fitnessEvaluationProtocol);
+                educationProtocol = new EducationStandard(problemData, fitnessEvaluationProtocol, penaltyAdjustmentProtocol);
                 break;
             default:
                 educationProtocol = null;
@@ -115,7 +123,10 @@ public class Process {
     private void selectFitnessEvaluationProtocol() {
         switch (problemData.getHeuristicParameters().get("Fitness evaluation protocol")) {
             case "standard":
-                fitnessEvaluationProtocol = new FitnessEvaluation();
+                fitnessEvaluationProtocol = new FitnessEvaluationQuickAndDirty(problemData);
+                break;
+            case "dag":
+                fitnessEvaluationProtocol = new FitnessEvaluationDAG(problemData);
                 break;
             default:
                 fitnessEvaluationProtocol = null;
@@ -150,7 +161,7 @@ public class Process {
         infeasibleSubPopulationByIteration.put(iteration, infeasiblePopulation);
         bestFeasibleIndividualByIteration.put(iteration, bestFeasibleIndividual);
 
-        System.out.println("Iteration: " + iteration + " Feasible pop size: " + feasiblePopulation.size() + " Infeasible pop size: " + infeasiblePopulation.size());
+        // System.out.println("Iteration: " + iteration + " Feasible pop size: " + feasiblePopulation.size() + " Infeasible pop size: " + infeasiblePopulation.size());
     }
 
     public void addDiversityDistance(Individual kid) {
