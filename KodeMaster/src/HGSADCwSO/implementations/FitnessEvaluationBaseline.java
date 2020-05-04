@@ -1,7 +1,6 @@
 package HGSADCwSO.implementations;
 
 import HGSADCwSO.*;
-import HGSADCwSO.implementations.DAG.DAG;
 import HGSADCwSO.protocols.FitnessEvaluationProtocol;
 
 import java.util.ArrayList;
@@ -128,12 +127,12 @@ public class FitnessEvaluationBaseline implements FitnessEvaluationProtocol {
         for (int vessel : chromosome1.keySet())
             for(int index = 0; index < chromosome1.get(vessel).size(); index++){
                 if (chromosome1.get(vessel).size() > chromosome2.get(vessel).size()) {
-                    if (index < chromosome2.get(vessel).size()-1){
+                    if (index < chromosome2.get(vessel).size()){
                         if (chromosome2.get(vessel).get(index) != chromosome1.get(vessel).get(index)) {
                             voyageDifference++;
                         }
                     }
-                    else if (index >= chromosome2.get(vessel).size()-1) {
+                    else if (index >= chromosome2.get(vessel).size()) {
                         voyageDifference += chromosome1.get(vessel).size() - chromosome2.get(vessel).size();
                     }
                 }

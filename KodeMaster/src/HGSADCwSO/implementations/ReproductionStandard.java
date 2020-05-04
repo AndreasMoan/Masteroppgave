@@ -190,6 +190,9 @@ public class ReproductionStandard implements ReproductionProtocol {
             kid.get(bestInsertionVessel).add(bestInsertionPosition,orderNumber);
         }
 
+
+        // System.out.println("offspring : " + kid);
+
         //Educate
 
         //Repair

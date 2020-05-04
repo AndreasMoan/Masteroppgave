@@ -25,31 +25,49 @@ public class HackInitProblemData {
 
         HashMap<String, String> heuristicInstanceParameters = new HashMap<String, String>();
 
+        // Protocols
+
         heuristicInstanceParameters.put("Initial population protocol","standard");
         heuristicInstanceParameters.put("Parents selection protocol","binary tournament");
         heuristicInstanceParameters.put("Education protocol","cost");
         heuristicInstanceParameters.put("Reproduction protocol","standard");
         heuristicInstanceParameters.put("Fitness evaluation protocol","dag");
+        heuristicInstanceParameters.put("Sailing leg calculations protocol","quick and dirty");
+
+        // Population management
+
         heuristicInstanceParameters.put("Population size","25");
         heuristicInstanceParameters.put("Number of offspring in a generation","75");
-        heuristicInstanceParameters.put("Education rate", "0,75");
-        heuristicInstanceParameters.put("Repair rate", "0,75");
-        heuristicInstanceParameters.put("Number of time periods per hour", "4");
-        heuristicInstanceParameters.put("Sailing leg calculations protocol","quick and dirty");
-        heuristicInstanceParameters.put("Cost penalty per excessive time period","10");
         heuristicInstanceParameters.put("Target feasible proportion","0,5");
+        heuristicInstanceParameters.put("Proportion of elite individuals", "0,4");
 
-        heuristicInstanceParameters.put("Length of time period", "60");
+        // Chances
+
+        heuristicInstanceParameters.put("Education rate", "1");
+        heuristicInstanceParameters.put("Repair rate", "0,75");
+
+        // Discretization:
+
+        heuristicInstanceParameters.put("Number of time periods per hour", "4");
+
+        // Penalty costs
+
         heuristicInstanceParameters.put("Factor to increase penalties with", "1,2");
         heuristicInstanceParameters.put("Factor to decrease penalties with", "0,85");
-        heuristicInstanceParameters.put("Granularity threshold in RI", "0,4"); //share of neighbourhood
-        heuristicInstanceParameters.put("Proportion of individuals considered for distance evaluation", "0,2");
-        heuristicInstanceParameters.put("Proportion of elite individuals", "0,4");
+
+        heuristicInstanceParameters.put("Cost penalty per excessive time period","10");
         heuristicInstanceParameters.put("Capacity constraint violation penalty", "5"); //TODO - sett en god verdi
         heuristicInstanceParameters.put("Duration constraint violation penalty", "5"); //TODO - sett en god verdi
         heuristicInstanceParameters.put("Deadline constraint violation penalty", "5");
+
+        // Stopping and diversification
+
         heuristicInstanceParameters.put("Iterations before diversify","300");
         heuristicInstanceParameters.put("Iterations before stopping","2000");
+
+        // Neighbourhood
+        heuristicInstanceParameters.put("Proportion of individuals considered for distance evaluation", "0,2");
+        heuristicInstanceParameters.put("Granularity threshold in RI", "0,4"); //share of neighbourhood
 
 
 

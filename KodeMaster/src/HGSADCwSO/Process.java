@@ -68,8 +68,14 @@ public class Process {
     }
 
     public void educate(Individual individual) {
-        educationProtocol.educate(individual);
+        double chance = problemData.getHeuristicParameterDouble("Education rate");
+        double luck = new Random().nextDouble();
+        if (luck < chance){
+            educationProtocol.educate(individual);
+        }
     }
+
+
 
     private void selectProtocols() {
         selectFitnessEvaluationProtocol();
