@@ -159,6 +159,7 @@ public class FitnessEvaluationBaseline implements FitnessEvaluationProtocol {
         double penalizedCost = individual.getScheduleCost() + individual.getDurationViolation()*durationViolationPenalty + individual.getCapacityViolation()*capacityViolationPenalty+ individual.getDeadlineViolation()*deadlineViolationPenalty;
         penalizedCost = Math.round(penalizedCost);
         individual.setPenalizedCost(penalizedCost);
+
     }
 
     public void setPenalizedCostIndividual(Individual individual) {//TODO
@@ -173,12 +174,12 @@ public class FitnessEvaluationBaseline implements FitnessEvaluationProtocol {
         return 0;
     }
 
-    public double getPenalizedCostOfVoyage(ArrayList<Integer> orderSequence) {
-        return getPenalizedCostOfVoyage(orderSequence, durationViolationPenalty, capacityViolationPenalty, deadlineViolationPenalty);
+    public double getPenalizedCostOfVoyage(ArrayList<Integer> orderSequence, int vessel) {
+        return getPenalizedCostOfVoyage(orderSequence, vessel, durationViolationPenalty, capacityViolationPenalty, deadlineViolationPenalty);
     }
 
-    public double getPenalizedCostOfVoyage(ArrayList<Integer> orderSequence, double durationViolationPenalty, double capacityViolationPenalty, double deadlineViolationPenalty) {
-        return 0; //TODO
+    public double getPenalizedCostOfVoyage(ArrayList<Integer> orderSequence, int vessel, double durationViolationPenalty, double capacityViolationPenalty, double deadlineViolationPenalty) {
+        return 0;
     }
 
     public double getDurationViolationPenalty() {

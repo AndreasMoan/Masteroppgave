@@ -10,7 +10,7 @@ import java.util.Map;
 import static java.lang.Math.max;
 
 
-public class FitnessEvaluationDAG extends FitnessEvaluationBaseline {
+public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix penalty for deadline violation by multiplying cost per hour, not per discrete time period
 
     private ProblemData problemData;
     
@@ -19,9 +19,6 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline {
     private double nCloseProp;
     protected double nEliteProp;
     private double numberOfOrders;
-    private double durationViolationPenalty;
-    private double capacityViolationPenalty;
-    private double deadlineViolationPenalty;
     private HashMap<Individual, HashMap<Individual, Double>> hammingDistances;
 
     private int multiplier;
@@ -38,14 +35,17 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline {
             cachedVesselTours.put(i, new HashMap<>());
         }
         this.multiplier = (int) problemData.getHeuristicParameterDouble("Number of time periods per hour");
-        this.deadlineViolationPenalty = problemData.getHeuristicParameterDouble("Deadline constraint violation penalty");
-        this.durationViolationPenalty = problemData.getHeuristicParameterDouble("Duration constraint violation penalty");
-        this.capacityViolationPenalty = problemData.getHeuristicParameterDouble("Capacity constraint violation penalty");
     }
 
-
     @Override
-    public void evaluate(Individual individual) {
+    public void evaluate(Individual individual)  {
+        double devp = problemData.getHeuristicParameterDouble("Deadline constraint violation penalty");
+        double duvp = problemData.getHeuristicParameterDouble("Duration constraint violation penalty");
+        double cvp = problemData.getHeuristicParameterDouble("Capacity constraint violation penalty");
+        evaluate(individual, devp, cvp, duvp);
+    }
+
+    public void evaluate(Individual individual, double durationViolationPenalty, double capacityViolationPenalty, double deadlineViolationPenalty) {
 
         Genotype genotype = individual.getGenotype();
         
@@ -74,7 +74,7 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline {
                 }
                 else {
                     Graph graph = getDAG(tour);
-                    doDijkstra(graph, vessel.getReturnDay()*24*multiplier); //TODO check correct return time
+                    doDijkstra(graph, vessel.getReturnDay()*24*multiplier, durationViolationPenalty, deadlineViolationPenalty); //TODO check correct return time
                     double[] vesselTourInfo = getTourInfo(graph, vessel.getReturnDay()*24*multiplier);
 
                     scheduleCost = vesselTourInfo[0];
@@ -86,6 +86,7 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline {
                     for (int orderNumber : tour) {
                         capacityReqOfTour += problemData.getDemandByOrderNumber(orderNumber);
                     }
+                    // System.out.println("Capacuty: " + vessel.getCapacity() + ", tour req: " + capacityReqOfTour);
                     capacityViolation += Math.max(0, capacityReqOfTour - vessel.getCapacity());
 
                     cachedVesselTours.get(vessel.getNumber()).put(tour, new double[] {scheduleCost, durationViolation, deadlineViolation, capacityViolation});
@@ -93,14 +94,14 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline {
             }
         }
 
-        double durartionViolationCost = durationViolation * durationViolationPenalty;
+        double durationViolationCost = durationViolation * durationViolationPenalty;
         double deadlineViolationCost = deadlineViolation * deadlineViolationPenalty;
-        double capacituViolationCost = capacityViolation * deadlineViolationPenalty;
+        double capacityViolationCost = capacityViolation * capacityViolationPenalty;
 
         individual.setScheduleCost(scheduleCost);
-        individual.setDurationViolation(durationViolation, durartionViolationCost);
+        individual.setDurationViolation(durationViolation, durationViolationCost);
         individual.setDeadlineViolation(deadlineViolation, deadlineViolationCost);
-        individual.setCapacityViolation(capacityViolation, capacituViolationCost);
+        individual.setCapacityViolation(capacityViolation, capacityViolationCost);
         individual.setPenalizedCost();
     }
     
@@ -109,6 +110,7 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline {
             return cachedGraphs.get(tour);
         }
         else {
+            // System.out.println("Tour : " + tour);
             Graph graph = new Graph(tour, problemData);
             cachedGraphs.put(tour, graph);
             return graph;
@@ -118,7 +120,7 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline {
 
     //--------------------------------------- DIJKSTRA ----------------------------------------
 
-    private void doDijkstra(Graph graph, int vesselReturnTime){
+    private void doDijkstra(Graph graph, int vesselReturnTime, double durationViolationPenalty, double deadlineViolationPenalty){
 
         // System.out.println("================================== DIJKSTRA ======================================");
 
@@ -128,7 +130,7 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline {
                 // System.out.println("2");
                 // System.out.println(pair.getValue().getChildEdges().size());
 
-                expand(pair.getValue());
+                expand(pair.getValue(), deadlineViolationPenalty);
             }
         }
         for (Map.Entry<Integer, Node> entry : graph.getGraph().get(graph.getSize()-1).entrySet()){
@@ -144,7 +146,7 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline {
         }
     }
 
-    private void expand(Node node) {
+    private void expand(Node node, double deadlineViolationPenalty) {
         for (Edge childEdge : node.getChildEdges()){
             // System.out.println("3 !!!!");
 
@@ -197,5 +199,37 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline {
         return new double[] {leastCost, durationViolation, deadlineViolation};
     }
 
+
+    // -------------------------------------------- OVERRIDED FUNCTIONS ------------------------------------------------
+
+    @Override
+    public void setPenalizedCostIndividual(Individual individual, double durationViolationPenalty, double capacityViolationPenalty, double deadlineViolationPenalty) {
+        evaluate(individual, durationViolationPenalty, capacityViolationPenalty, deadlineViolationPenalty);
+}
+
+    @Override
+    public void setPenalizedCostIndividual(Individual individual) {
+        evaluate(individual);
+    }
+
+    @Override
+    public double getPenalizedCostOfVoyage(ArrayList<Integer> orderSequence, int vessel, double durationViolationPenalty, double capacityViolationPenalty, double deadlineViolationPenalty) {
+
+        HashMap<Integer, ArrayList<Integer>> tempChromosome = new HashMap<>();
+        for (int i = 0; i < problemData.getNumberOfVessels(); i ++){
+            if (i == vessel) {
+                tempChromosome.put(i, orderSequence);
+            }
+            else {
+                tempChromosome.put(i, new ArrayList<>());
+            }
+        }
+
+        Individual tempIndividual = new Individual(tempChromosome,this);
+
+        evaluate(tempIndividual, durationViolationPenalty, capacityViolationPenalty, deadlineViolationPenalty);
+
+        return tempIndividual.getPenalizedCost();
+    }
 
 }

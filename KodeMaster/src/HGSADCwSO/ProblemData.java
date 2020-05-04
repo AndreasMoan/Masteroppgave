@@ -1,6 +1,5 @@
 package HGSADCwSO;
 
-import com.sun.org.apache.xpath.internal.operations.Or;
 
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -184,6 +183,13 @@ public class ProblemData {
     }
 
     public void printProblemData() {
+    }
+
+    public int getOrderDeadlineByNumber(int deadlineNumber){
+        if (deadlineNumber == 0){
+            return Integer.MAX_VALUE;
+        }
+        else return ordersByNumber.get(deadlineNumber).getDeadline();
     }
 
     public ArrayList<Integer> getWeatherStateByHour() {

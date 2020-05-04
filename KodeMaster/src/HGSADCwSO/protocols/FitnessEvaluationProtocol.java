@@ -22,9 +22,9 @@ public interface FitnessEvaluationProtocol {
 
     public void setPenalizedCostIndividual(Individual individual);
 
-    public double getPenalizedCostOfVoyage(ArrayList<Integer> orderSequence);
+    public double getPenalizedCostOfVoyage(ArrayList<Integer> orderSequence, int vessel);
 
-    public double getPenalizedCostOfVoyage(ArrayList<Integer> orderSequence,  double durationViolationPenalty, double capacityViolationPenalty, double deadlineViolationPenalty);//har bytta Voyage voyage med ArrayList<Integer> orderSequence
+    public double getPenalizedCostOfVoyage(ArrayList<Integer> orderSequence, int vessel,  double durationViolationPenalty, double capacityViolationPenalty, double deadlineViolationPenalty);//har bytta Voyage voyage med ArrayList<Integer> orderSequence
 
     public double getDurationViolationPenalty();
 

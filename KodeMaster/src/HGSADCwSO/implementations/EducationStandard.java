@@ -32,7 +32,7 @@ public class EducationStandard implements EducationProtocol {
 
         //if (randomNumber > problemData.getHeuristicParameterDouble("Education rate")) {
         //Education:
-        fitnessEvaluationProtocol.setPenalizedCostIndividual(individual); //make sure costs are up to date before education.
+        fitnessEvaluationProtocol.setPenalizedCostIndividual(individual); //make sure costs are up to date before education. //TODO Fix potential bug
         neighbourhoodSearch(individual);
         mergeVoyages(individual);
         voyageReduction(individual);
@@ -66,15 +66,17 @@ public class EducationStandard implements EducationProtocol {
         for (int vessel : chromosome.keySet()) {
             ArrayList<Integer> voyage = chromosome.get(vessel);
             if (voyage.size() != 0) {
-                ArrayList<Integer> improvedVoyage = getImprovedVoyage(voyage);
+                ArrayList<Integer> improvedVoyage = getImprovedVoyage(voyage, vessel);
+                System.out.println(chromosome);
                 chromosome.put(vessel, new ArrayList<>(improvedVoyage));
+                System.out.println(chromosome);
             }
         }
         fitnessEvaluationProtocol.setPenalizedCostIndividual(individual);
     }
 
 
-    private ArrayList<Integer> getImprovedVoyage(ArrayList<Integer> voyage) {
+    private ArrayList<Integer> getImprovedVoyage(ArrayList<Integer> voyage, int vessel) {
         ArrayList<Integer> orders = new ArrayList<>(voyage);
         ArrayList<Integer> untreatedOrders = new ArrayList<>(voyage);
 
@@ -83,14 +85,14 @@ public class EducationStandard implements EducationProtocol {
             ArrayList<Integer> neighbours = getNeighbours(u, orders);
             while (neighbours.size() > 0) {
                 Integer v = Utilities.pickAndRemoveRandomElementFromList(neighbours);
-                orders = doRandomMove(u, v, orders);
+                orders = doRandomMove(u, v, orders, vessel);
             }
         }
         return new ArrayList<>(orders);
     }
 
 
-    private ArrayList<Integer> doRandomMove(Integer u, Integer v, ArrayList<Integer> orders) {
+    private ArrayList<Integer> doRandomMove(Integer u, Integer v, ArrayList<Integer> orders, int vessel) {
         ArrayList<Integer> unusedMoves = new ArrayList<>(); //list of unused moves
         Move move = new Move();
         for (int i = 0; i < move.getNumberOfMoves(); i++) {
@@ -104,16 +106,16 @@ public class EducationStandard implements EducationProtocol {
             double newVoyagePenalizedCost;
 
             if (!isRepair) { //Normal education
-                oldVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(orders);
-                newVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(newOrders);
+                oldVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(orders, vessel);
+                newVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(newOrders, vessel);
             }
             else {           //Repair education
                 double durationViolationPenalty = fitnessEvaluationProtocol.getDurationViolationPenalty() * penaltyMultiplier;
                 double capacityViolationPenalty = fitnessEvaluationProtocol.getCapacityViolationPenalty() * penaltyMultiplier;
                 double deadlineViolationPenalty = fitnessEvaluationProtocol.getDeadlineViolationPenalty() * penaltyMultiplier;
 
-                oldVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(orders, durationViolationPenalty, capacityViolationPenalty, deadlineViolationPenalty);
-                newVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(newOrders, durationViolationPenalty, capacityViolationPenalty, deadlineViolationPenalty);
+                oldVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(orders, vessel, durationViolationPenalty, capacityViolationPenalty, deadlineViolationPenalty);
+                newVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(newOrders, vessel, durationViolationPenalty, capacityViolationPenalty, deadlineViolationPenalty);
             }
             if (newVoyagePenalizedCost < oldVoyagePenalizedCost) {
                 return newOrders;
@@ -147,7 +149,7 @@ public class EducationStandard implements EducationProtocol {
 
         //removes the neighbours with the highest distance until the correct number of neighbours is obtained
         while (neighbours.size() > numberOfNeighboursAllowed) {
-            System.out.println(orders);
+            //System.out.println(orders);
             neighbours.remove(distancesByOrderNumber.remove(0).getKey());
         }
         return neighbours;
@@ -174,7 +176,7 @@ public class EducationStandard implements EducationProtocol {
 
                 ArrayList<Integer> voyageToMergeInto = individual.getVesselTourChromosome().get(vesselNumberToKeep); //order sequence of the voyage to keep
                 ArrayList<Integer> voyageToMove = individual.getVesselTourChromosome().get(vesselNumberToRemove); //order sequence of the voyage to remove
-                double currentPenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(voyageToMergeInto) + fitnessEvaluationProtocol.getPenalizedCostOfVoyage(voyageToMove);
+                double currentPenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(voyageToMergeInto, vesselNumberToKeep) + fitnessEvaluationProtocol.getPenalizedCostOfVoyage(voyageToMove, vesselNumberToRemove);
 
                 ArrayList<Integer> newVoyage = new ArrayList<>(voyageToMergeInto);
                 //insert each order in voyageToMove into voyageToMergeInto
@@ -184,7 +186,7 @@ public class EducationStandard implements EducationProtocol {
                     newVoyage.add(bestPos, order);
                 }
 
-                double newPenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(newVoyage);
+                double newPenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(newVoyage, vesselNumberToKeep);
                 double costReduction = currentPenalizedCost-newPenalizedCost;
                 if (costReduction > bestCostReduction){
                     bestVesselToKeep = vesselNumberToKeep;
@@ -211,13 +213,13 @@ public class EducationStandard implements EducationProtocol {
 
         int orderToAdd = order.getNumber();
         int indexWhereNewOrderIsPlaced = 0;
-        double penalizedCostBeforeOrderAdded = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(voyageToMergeInto);
+        double penalizedCostBeforeOrderAdded = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(voyageToMergeInto, vesselTakingOverOrder);
         double bestNewPenalizedCost = Double.MAX_VALUE;
 
         for (int index = 0; index < voyageToMergeInto.size()+1; index++){
             ArrayList<Integer> testVoyage = new ArrayList<>(voyageToMergeInto);
             testVoyage.add(index, orderToAdd);
-            double testVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(testVoyage);
+            double testVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(testVoyage, vesselTakingOverOrder);
             if (testVoyagePenalizedCost < bestNewPenalizedCost){
                 indexWhereNewOrderIsPlaced = index;
                 bestNewPenalizedCost = testVoyagePenalizedCost;
@@ -349,11 +351,11 @@ public class EducationStandard implements EducationProtocol {
             double highestPenalizedCostForShortestVoyages = 0;
             Integer voyageToRemove = 0;
 
-            for (Integer voyage : shortestVoyages.keySet()){
-                double currentPenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(shortestVoyages.get(voyage));
+            for (Integer vessel : shortestVoyages.keySet()){
+                double currentPenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(shortestVoyages.get(vessel), vessel);
                 if(currentPenalizedCost > highestPenalizedCostForShortestVoyages){
                     highestPenalizedCostForShortestVoyages = currentPenalizedCost;
-                    voyageToRemove = voyage;
+                    voyageToRemove = vessel;
                 }
             }
             voyageToBeTerminated = voyageToRemove;

@@ -21,6 +21,8 @@ public class Individual {
     private double deadlineViolationCost;
     private double fitness;
 
+    private double heuristicCost;
+
     private Set<Integer> departingVessels;
 
     private boolean feasibility;
@@ -175,5 +177,13 @@ public class Individual {
 
     public void setDiversityRank(int diversityRank) {
         this.diversityRank = diversityRank;
+    }
+
+    public void setHeuristicCost(double heuristicCost) {
+        this.heuristicCost = heuristicCost;
+    }
+
+    public double getHeuristicCost() {
+        return heuristicCost;
     }
 }

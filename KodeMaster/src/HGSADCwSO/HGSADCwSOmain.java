@@ -92,8 +92,8 @@ public class HGSADCwSOmain {
         process.educate(kid);
         process.repair(kid);
         boolean isImprovingSolution = addToSubpopulation(kid);
-        if (kid.getFitness() < bestCost) {
-            bestCost = kid.getFitness();
+        if (kid.getPenalizedCost() < bestCost) {
+            bestCost = kid.getPenalizedCost();
         }
         process.updateIterationsSinceImprovementCounter(isImprovingSolution);
         process.adjustPenaltyParameters(feasiblePopulation, infeasiblePopulation);
@@ -128,7 +128,7 @@ public class HGSADCwSOmain {
         System.out.println(kid.getGenotype().getVesselTourChromosome());
 
         if (kid.isFeasible()) {
-            if ((bestFeasibleIndividual == null) || (kid.getFitness() < bestFeasibleIndividual.getFitness())) { //TODO change to penalized cost
+            if ((bestFeasibleIndividual == null) || (kid.getPenalizedCost() < bestFeasibleIndividual.getPenalizedCost())) { //TODO change to penalized cost
                 bestFeasibleIndividual = kid;
                 isImprovingSolution = true;
             }

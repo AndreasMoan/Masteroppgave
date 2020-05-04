@@ -1,7 +1,5 @@
 package HGSADCwSO;
 
-import com.sun.org.apache.xpath.internal.operations.Or;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -56,7 +54,7 @@ public class HackInitProblemData {
         heuristicInstanceParameters.put("Factor to decrease penalties with", "0,85");
 
         heuristicInstanceParameters.put("Cost penalty per excessive time period","10");
-        heuristicInstanceParameters.put("Capacity constraint violation penalty", "5"); //TODO - sett en god verdi
+        heuristicInstanceParameters.put("Capacity constraint violation penalty", "10000"); //TODO - sett en god verdi
         heuristicInstanceParameters.put("Duration constraint violation penalty", "5"); //TODO - sett en god verdi
         heuristicInstanceParameters.put("Deadline constraint violation penalty", "5");
 

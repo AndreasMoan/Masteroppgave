@@ -155,7 +155,7 @@ public class Graph {
             }
             else {
 
-                int deadlineNodeTime = problemData.getOrdersByNumber().get(node.getOrderNumber()).getDeadline() * 24 * (int) multiplier;
+                int deadlineNodeTime = problemData.getOrderDeadlineByNumber(node.getOrderNumber()) * 24 * (int) multiplier;
                 int deadlineViolation = Math.max(0, finServicingTime - deadlineNodeTime);
 
                 childNode = new Node(finServicingTime, destinationOrderNumber, deadlineViolation);

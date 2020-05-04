@@ -1,7 +1,5 @@
 package HGSADCwSO;
 
-import com.sun.media.jfxmediaimpl.platform.gstreamer.GSTPlatform;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -14,7 +12,7 @@ public class Genotype {
 
         this.vesselTourChromosome = vesselTourChromosome;
 
-        System.out.println(vesselTourChromosome);
+        // System.out.println(vesselTourChromosome);
 
         //System.out.println("1: " + vesselTourChromosome);
 
@@ -28,7 +26,7 @@ public class Genotype {
     public void setVesselTourChromosome(HashMap<Integer, ArrayList<Integer>> vesselTourChromosome) {
         this.vesselTourChromosome = vesselTourChromosome;
 
-        System.out.println(vesselTourChromosome);
+        // System.out.println(vesselTourChromosome);
 
         if(vesselTourChromosome.get(0).size() + vesselTourChromosome.get(1).size() > 9){
             System.out.println("Found error 2");

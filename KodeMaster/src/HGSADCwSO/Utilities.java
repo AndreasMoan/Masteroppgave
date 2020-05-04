@@ -68,10 +68,10 @@ public class Utilities {
         return new Comparator<Individual>() {
             @Override
             public int compare(Individual individual1, Individual individual2) {
-                if (individual1.getFitness() < individual2.getFitness()){
+                if (individual1.getPenalizedCost() < individual2.getPenalizedCost()){
                     return  1;
                 }
-                else if (individual1.getFitness() > individual2.getFitness()) {
+                else if (individual1.getPenalizedCost() > individual2.getPenalizedCost()) {
                     return  -1;
                 }
                 else {
@@ -137,10 +137,10 @@ public class Utilities {
     public static Comparator<Individual> getBiasedFitnessComparator() {
         return new Comparator<Individual>() {
             public int compare(Individual ind1, Individual ind2) {
-                if (ind1.getBiasedFitness() < ind2.getBiasedFitness()) {
+                if (ind1.getPenalizedCost() < ind2.getPenalizedCost()) {
                     return -1;
                 }
-                else if (ind1.getBiasedFitness() > ind2.getBiasedFitness()) {
+                else if (ind1.getPenalizedCost() > ind2.getPenalizedCost()) {
                     return 1;
                 }
                 else {
