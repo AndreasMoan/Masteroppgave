@@ -13,6 +13,8 @@ public class ParentsSelectionBinaryTournament implements ParentSelectionProtocol
         ArrayList<Individual> parents = new ArrayList<Individual>();
         Individual father = pickParent(population);
         Individual mother = pickParent(population);
+        System.out.println("Father: " + father.getVesselTourChromosome());
+        System.out.println("Mother: " + mother.getVesselTourChromosome());
         parents.add(father);
         parents.add(mother);
         return parents;

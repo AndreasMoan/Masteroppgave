@@ -26,6 +26,7 @@ public class EducationStandard implements EducationProtocol {
 
     @Override
     public void educate(Individual individual) { //TODO - klarer ikke å finne at B&L educater nye offspring med p^EDU?. Dette må såfall legges inn i main. Kan ikke ligge inni denne funksjonen da alle initielle individer skal educates
+
         /*Random rand = new Random();
         double randomNumber = rand.nextDouble();*/
 
@@ -59,6 +60,7 @@ public class EducationStandard implements EducationProtocol {
     }
 
     protected void neighbourhoodSearch(Individual individual) {
+
         HashMap<Integer, ArrayList<Integer>> chromosome = individual.getVesselTourChromosome(); //first key is a vessel number, and the value is a set of orders
 
         for (int vessel : chromosome.keySet()) {
@@ -145,6 +147,7 @@ public class EducationStandard implements EducationProtocol {
 
         //removes the neighbours with the highest distance until the correct number of neighbours is obtained
         while (neighbours.size() > numberOfNeighboursAllowed) {
+            System.out.println(orders);
             neighbours.remove(distancesByOrderNumber.remove(0).getKey());
         }
         return neighbours;

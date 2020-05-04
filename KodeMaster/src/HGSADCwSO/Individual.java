@@ -16,6 +16,9 @@ public class Individual {
     private double durationViolation;
     private double capacityViolation;
     private double deadlineViolation;
+    private double durationViolationCost;
+    private double capacityViolationCost;
+    private double deadlineViolationCost;
     private double fitness;
 
     private Set<Integer> departingVessels;
@@ -97,8 +100,8 @@ public class Individual {
         return penalizedCost;
     }
 
-    public void setPenalizedCost(Double cost) {
-        penalizedCost = cost;
+    public void setPenalizedCost() {
+        penalizedCost = scheduleCost + durationViolationCost + deadlineViolationCost + capacityViolationCost;
     }
 
     /*
@@ -113,18 +116,25 @@ public class Individual {
 
     public double getDurationViolation() {return durationViolation; }
 
-    public void setDurationViolation(double violation) {this.durationViolation = violation; }
+    public void setDurationViolation(double violation, double violationCost) {
+        this.durationViolation = violation;
+        this.durationViolationCost = violationCost;
+    }
 
     public double getCapacityViolation() {return capacityViolation; }
 
-    public void setCapacityViolation(double violation) {this.capacityViolation = violation; }
+    public void setCapacityViolation(double violation, double violationCost) {
+        this.capacityViolation = violation;
+        this.capacityViolationCost = violationCost;
+    }
 
     public double getDeadlineViolation() {
         return deadlineViolation;
     }
 
-    public void setDeadlineViolation(double deadlineViolation) {
+    public void setDeadlineViolation(double deadlineViolation, double violationCost) {
         this.deadlineViolation = deadlineViolation;
+        this.deadlineViolationCost = violationCost;
     }
 
     public double getBiasedFitness() {
