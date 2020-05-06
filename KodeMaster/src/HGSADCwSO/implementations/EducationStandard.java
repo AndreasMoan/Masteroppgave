@@ -5,7 +5,8 @@ import HGSADCwSO.protocols.EducationProtocol;
 import HGSADCwSO.protocols.FitnessEvaluationProtocol;
 import javafx.util.Pair;
 
-
+import java.io.LineNumberReader;
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class EducationStandard implements EducationProtocol {
@@ -26,17 +27,17 @@ public class EducationStandard implements EducationProtocol {
 
     @Override
     public void educate(Individual individual) { //TODO - klarer ikke å finne at B&L educater nye offspring med p^EDU?. Dette må såfall legges inn i main. Kan ikke ligge inni denne funksjonen da alle initielle individer skal educates
+
         /*Random rand = new Random();
         double randomNumber = rand.nextDouble();*/
 
         //if (randomNumber > problemData.getHeuristicParameterDouble("Education rate")) {
-            //Education:
-        individual.updatePenalizedCostForChromosome(fitnessEvaluationProtocol); //make sure costs are up to date before education.
+        //Education:
+        fitnessEvaluationProtocol.evaluate(individual); //make sure costs are up to date before education. //TODO Fix potential bug
         neighbourhoodSearch(individual);
         mergeVoyages(individual);
         voyageReduction(individual);
         neighbourhoodSearch(individual);
-
         updatePenaltyAdjustmentCounter(individual);
         //}
     }
@@ -59,19 +60,21 @@ public class EducationStandard implements EducationProtocol {
     }
 
     protected void neighbourhoodSearch(Individual individual) {
+
         HashMap<Integer, ArrayList<Integer>> chromosome = individual.getVesselTourChromosome(); //first key is a vessel number, and the value is a set of orders
 
         for (int vessel : chromosome.keySet()) {
             ArrayList<Integer> voyage = chromosome.get(vessel);
             if (voyage.size() != 0) {
-                ArrayList<Integer> improvedVoyage = getImprovedVoyage(voyage);
+                ArrayList<Integer> improvedVoyage = getImprovedVoyage(voyage, vessel);
                 chromosome.put(vessel, new ArrayList<>(improvedVoyage));
             }
         }
-        individual.updatePenalizedCostForChromosome(fitnessEvaluationProtocol);
+        fitnessEvaluationProtocol.evaluate(individual);
     }
 
-    private ArrayList<Integer> getImprovedVoyage(ArrayList<Integer> voyage) {
+
+    private ArrayList<Integer> getImprovedVoyage(ArrayList<Integer> voyage, int vessel) {
         ArrayList<Integer> orders = new ArrayList<>(voyage);
         ArrayList<Integer> untreatedOrders = new ArrayList<>(voyage);
 
@@ -80,14 +83,14 @@ public class EducationStandard implements EducationProtocol {
             ArrayList<Integer> neighbours = getNeighbours(u, orders);
             while (neighbours.size() > 0) {
                 Integer v = Utilities.pickAndRemoveRandomElementFromList(neighbours);
-                orders = doRandomMove(u, v, orders);
+                orders = doRandomMove(u, v, orders, vessel);
             }
         }
         return new ArrayList<>(orders);
     }
 
 
-    private ArrayList<Integer> doRandomMove(Integer u, Integer v, ArrayList<Integer> orders) {
+    private ArrayList<Integer> doRandomMove(Integer u, Integer v, ArrayList<Integer> orders, int vessel) {
         ArrayList<Integer> unusedMoves = new ArrayList<>(); //list of unused moves
         Move move = new Move();
         for (int i = 0; i < move.getNumberOfMoves(); i++) {
@@ -101,16 +104,16 @@ public class EducationStandard implements EducationProtocol {
             double newVoyagePenalizedCost;
 
             if (!isRepair) { //Normal education
-                oldVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(orders);
-                newVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(newOrders);
+                oldVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(orders, vessel);
+                newVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(newOrders, vessel);
             }
             else {           //Repair education
                 double durationViolationPenalty = fitnessEvaluationProtocol.getDurationViolationPenalty() * penaltyMultiplier;
                 double capacityViolationPenalty = fitnessEvaluationProtocol.getCapacityViolationPenalty() * penaltyMultiplier;
                 double deadlineViolationPenalty = fitnessEvaluationProtocol.getDeadlineViolationPenalty() * penaltyMultiplier;
 
-                oldVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(orders, durationViolationPenalty, capacityViolationPenalty, deadlineViolationPenalty);
-                newVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(newOrders, durationViolationPenalty, capacityViolationPenalty, deadlineViolationPenalty);
+                oldVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(orders, vessel, durationViolationPenalty, capacityViolationPenalty, deadlineViolationPenalty);
+                newVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(newOrders, vessel, durationViolationPenalty, capacityViolationPenalty, deadlineViolationPenalty);
             }
             if (newVoyagePenalizedCost < oldVoyagePenalizedCost) {
                 return newOrders;
@@ -144,6 +147,7 @@ public class EducationStandard implements EducationProtocol {
 
         //removes the neighbours with the highest distance until the correct number of neighbours is obtained
         while (neighbours.size() > numberOfNeighboursAllowed) {
+            //System.out.println(orders);
             neighbours.remove(distancesByOrderNumber.remove(0).getKey());
         }
         return neighbours;
@@ -151,6 +155,7 @@ public class EducationStandard implements EducationProtocol {
 
 
     public void mergeVoyages(Individual individual) {
+
         Set<Integer> departingVessels = new HashSet<> (individual.getDepartingVessels());
         if (departingVessels.size() > 1){ //if there is more than one departures the next departure day
             Set<Set<Integer>> allDepartingVesselCombinations = Utilities.cartesianProduct(departingVessels);
@@ -170,7 +175,7 @@ public class EducationStandard implements EducationProtocol {
 
                 ArrayList<Integer> voyageToMergeInto = individual.getVesselTourChromosome().get(vesselNumberToKeep); //order sequence of the voyage to keep
                 ArrayList<Integer> voyageToMove = individual.getVesselTourChromosome().get(vesselNumberToRemove); //order sequence of the voyage to remove
-                double currentPenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(voyageToMergeInto) + fitnessEvaluationProtocol.getPenalizedCostOfVoyage(voyageToMove);
+                double currentPenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(voyageToMergeInto, vesselNumberToKeep) + fitnessEvaluationProtocol.getPenalizedCostOfVoyage(voyageToMove, vesselNumberToRemove);
 
                 ArrayList<Integer> newVoyage = new ArrayList<>(voyageToMergeInto);
                 //insert each order in voyageToMove into voyageToMergeInto
@@ -180,7 +185,7 @@ public class EducationStandard implements EducationProtocol {
                     newVoyage.add(bestPos, order);
                 }
 
-                double newPenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(newVoyage);
+                double newPenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(newVoyage, vesselNumberToKeep);
                 double costReduction = currentPenalizedCost-newPenalizedCost;
                 if (costReduction > bestCostReduction){
                     bestVesselToKeep = vesselNumberToKeep;
@@ -197,7 +202,7 @@ public class EducationStandard implements EducationProtocol {
                 vesselTour.put(bestVesselToKeep, bestNewVoyage);
                 vesselTour.put(bestVesselToRemove, new ArrayList<>());
                 individual.setVesselTourChromosome(vesselTour);
-                individual.updatePenalizedCostForChromosome(fitnessEvaluationProtocol);
+                fitnessEvaluationProtocol.evaluate(individual);
             }
         }
     }
@@ -207,13 +212,13 @@ public class EducationStandard implements EducationProtocol {
 
         int orderToAdd = order.getNumber();
         int indexWhereNewOrderIsPlaced = 0;
-        double penalizedCostBeforeOrderAdded = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(voyageToMergeInto);
+        double penalizedCostBeforeOrderAdded = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(voyageToMergeInto, vesselTakingOverOrder);
         double bestNewPenalizedCost = Double.MAX_VALUE;
 
         for (int index = 0; index < voyageToMergeInto.size()+1; index++){
             ArrayList<Integer> testVoyage = new ArrayList<>(voyageToMergeInto);
             testVoyage.add(index, orderToAdd);
-            double testVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(testVoyage);
+            double testVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(testVoyage, vesselTakingOverOrder);
             if (testVoyagePenalizedCost < bestNewPenalizedCost){
                 indexWhereNewOrderIsPlaced = index;
                 bestNewPenalizedCost = testVoyagePenalizedCost;
@@ -243,76 +248,80 @@ public class EducationStandard implements EducationProtocol {
 
 
 
+    protected void voyageReduction(Individual individual){
 
-        protected void voyageReduction(Individual individual){
-            //  1.	Evaluate the penalized cost of the unchanged individual
-            Individual unchangedIndividual = new Individual (individual.getVesselTourChromosome(), fitnessEvaluationProtocol);
-            Individual modifiedIndividual = new Individual (individual.getVesselTourChromosome(), fitnessEvaluationProtocol);
+        //  1.	Evaluate the penalized cost of the unchanged individual
+        Individual unchangedIndividual = new Individual (Utilities.deepCopyVesselTour(individual.getVesselTourChromosome()), fitnessEvaluationProtocol);
+        Individual modifiedIndividual = new Individual (Utilities.deepCopyVesselTour(individual.getVesselTourChromosome()), fitnessEvaluationProtocol);
 
-            HashMap<Integer, ArrayList<Integer>> modifiedChromosome = new HashMap<>(modifiedIndividual.getVesselTourChromosome());
-            double unchangedIndividualPenalizedCost = unchangedIndividual.getPenalizedCost();
+        HashMap<Integer, ArrayList<Integer>> modifiedChromosome = new HashMap<>(modifiedIndividual.getVesselTourChromosome());
 
-            //  2. Checking that we have two or more voyages departing the next day
-            int countVoyagesDeparting = unchangedIndividual.getDepartingVessels().size();
-            if (countVoyagesDeparting > 1) {
+        fitnessEvaluationProtocol.evaluate(unchangedIndividual);
+        double unchangedIndividualPenalizedCost = unchangedIndividual.getPenalizedCost();
 
-                //  3.	Find the shortest voyage in the individual. If there exist more than one of the shortest voyage, chose the one with highest penalized cost to be removed from the individual.
-                Pair<Integer, ArrayList<Integer>> voyageNumberAndSequenceToBeTerminated = selectVoyageAndSequenceToRemoveFromChromosome(individual);
-                Integer voyageToRemove = voyageNumberAndSequenceToBeTerminated.getKey();
+        //  2. Checking that we have two or more voyages departing the next day
+        int countVoyagesDeparting = unchangedIndividual.getDepartingVessels().size();
+        if (countVoyagesDeparting > 1) {
 
-                //  4.	Remove the orders from the chromosome and put them in a separate list
-                ArrayList<Integer> ordersToReallocateIntFormat = new ArrayList<>();
+            //  3.	Find the shortest voyage in the individual. If there exist more than one of the shortest voyage, chose the one with highest penalized cost to be removed from the individual.
+            Pair<Integer, ArrayList<Integer>> voyageNumberAndSequenceToBeTerminated = selectVoyageAndSequenceToRemoveFromChromosome(individual);
+            Integer voyageToRemove = voyageNumberAndSequenceToBeTerminated.getKey();
 
-                while (modifiedChromosome.get(voyageToRemove).size() != 0) { //while the voyage to remove is not empty
-                    ordersToReallocateIntFormat.add(modifiedChromosome.get(voyageToRemove).get(0));//get the first order in the voyage to remove
-                    modifiedChromosome.get(voyageToRemove).remove(0); //remove the order you just places in another list
-                }
+            //  4.	Remove the orders from the chromosome and put them in a separate list
+            ArrayList<Integer> ordersToReallocateIntFormat = new ArrayList<>();
 
-                //  5. Sort the orders that are to be removed from the terminated voyage in ascending due dates.
+            while (modifiedChromosome.get(voyageToRemove).size() != 0) { //while the voyage to remove is not empty
+                ordersToReallocateIntFormat.add(modifiedChromosome.get(voyageToRemove).get(0));//get the first order in the voyage to remove
+                modifiedChromosome.get(voyageToRemove).remove(0); //remove the order you just places in another list
+            }
 
-                //Convert ordersToRelocate from Integer to Order-format
-                ArrayList<Order> ordersToReallocateOrderFormat = new ArrayList<>();
-                for (int i : ordersToReallocateIntFormat) {
-                    ordersToReallocateOrderFormat.add(problemData.getOrdersByNumber().get(i));
-                }
+            //  5. Sort the orders that are to be removed from the terminated voyage in decending due dates.
 
-                //sort
-                ArrayList<Order> ordersToReallocateOrderFormatSorted = new ArrayList<>(ordersToReallocateOrderFormat);
-                ordersToReallocateOrderFormatSorted.sort(Utilities.getDeadlineComparator());
+            //Convert ordersToRelocate from Integer to Order-format
+            ArrayList<Order> ordersToReallocateOrderFormat = new ArrayList<>();
+            for (int i : ordersToReallocateIntFormat) {
+                ordersToReallocateOrderFormat.add(problemData.getOrdersByNumber().get(i));
+            }
 
-                //sort ordersToReallocateIntFormat
+            //sort
+            ArrayList<Order> ordersToReallocateOrderFormatSorted = new ArrayList<>(ordersToReallocateOrderFormat);
+            ordersToReallocateOrderFormatSorted.sort(Utilities.getDeadlineComparator());
+
+            //sort ordersToReallocateIntFormat
                 /*ArrayList<Integer> ordersToReallocateIntFormatSorted = new ArrayList<Integer>();
                 for (Order order : ordersToReallocateOrderFormatSorted){
                     ordersToReallocateIntFormatSorted.add(order.getNumber());
                 }*/
 
-                //  6.	For each order in the list of orders that has to be reallocated
-                //      a.	Find the least cost insertion for the order into the other voyages in the individual. Assign the order to the voyage that has the cheapest insertion and delete from the ordersToReallocate-list
-                for (Order order : ordersToReallocateOrderFormatSorted) {
-                    Pair<Integer, Integer> cheapestVoyageAndPositionToInsertAnOrderTo = getCheapestVoyageAndPositionToInsertAnOrderTo(order, modifiedChromosome, voyageToRemove); //TODO - legg på "if getcheapestvoy.... is not null...
+            //  6.	For each order in the list of orders that has to be reallocated
+            //      a.	Find the least cost insertion for the order into the other voyages in the individual. Assign the order to the voyage that has the cheapest insertion and delete from the ordersToReallocate-list
+            for (Order order : ordersToReallocateOrderFormatSorted) {
+                Pair<Integer, Integer> cheapestVoyageAndPositionToInsertAnOrderTo = getCheapestVoyageAndPositionToInsertAnOrderTo(order, modifiedChromosome, voyageToRemove); //TODO - legg på "if getcheapestvoy.... is not null...
 
-                    Integer insertOrderInVoyageNumber = cheapestVoyageAndPositionToInsertAnOrderTo.getKey();
-                    Integer insertAtPositionInVoyage = cheapestVoyageAndPositionToInsertAnOrderTo.getValue();
+                Integer insertOrderInVoyageNumber = cheapestVoyageAndPositionToInsertAnOrderTo.getKey();
+                Integer insertAtPositionInVoyage = cheapestVoyageAndPositionToInsertAnOrderTo.getValue();
 
-                    modifiedChromosome.get(insertOrderInVoyageNumber).add(insertAtPositionInVoyage, order.getNumber());
-                }
+                modifiedChromosome.get(insertOrderInVoyageNumber).add(insertAtPositionInVoyage, order.getNumber());
+            }
 
-                //  7.	Evaluate the penalized cost of the new individual
-                modifiedIndividual.setVesselTourChromosome(modifiedChromosome);
-                modifiedIndividual.updatePenalizedCostForChromosome(fitnessEvaluationProtocol);
-                double modifiedIndividualPenalizedCost = modifiedIndividual.getPenalizedCost();
+            //  7.	Evaluate the penalized cost of the new individual
+            modifiedIndividual.setVesselTourChromosome(modifiedChromosome);
+            fitnessEvaluationProtocol.evaluate(modifiedIndividual);
+            double modifiedIndividualPenalizedCost = modifiedIndividual.getPenalizedCost();
 
-                //  8.	If the new individual has a lower penalized cost than the old, perform the voyage reduction
-                if (modifiedIndividualPenalizedCost < unchangedIndividualPenalizedCost) {
-                    individual.setVesselTourChromosome(modifiedChromosome);
-                }
+            //  8.	If the new individual has a lower penalized cost than the old, perform the voyage reduction
+
+            if (modifiedIndividualPenalizedCost < unchangedIndividualPenalizedCost) {
+
+                individual.setVesselTourChromosome(modifiedChromosome);
             }
         }
+    }
 
 
     protected Pair<Integer, ArrayList<Integer>> selectVoyageAndSequenceToRemoveFromChromosome(Individual individual){
         // Find the shortest voyage in the individual. If there exist more than one of the shortest voyage, chose the one with highest penalized cost to be removed from the individual.
-        Individual modifiedIndividual = new Individual (individual.getVesselTourChromosome(), fitnessEvaluationProtocol);
+        Individual modifiedIndividual = new Individual (Utilities.deepCopyVesselTour(individual.getVesselTourChromosome()), fitnessEvaluationProtocol);
         HashMap<Integer, ArrayList<Integer>> modifiedChromosome = new HashMap<>(modifiedIndividual.getVesselTourChromosome());
 
         int shortestVoyageSize = Integer.MAX_VALUE;
@@ -346,11 +355,11 @@ public class EducationStandard implements EducationProtocol {
             double highestPenalizedCostForShortestVoyages = 0;
             Integer voyageToRemove = 0;
 
-            for (Integer voyage : shortestVoyages.keySet()){
-                double currentPenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(shortestVoyages.get(voyage));
+            for (Integer vessel : shortestVoyages.keySet()){
+                double currentPenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(shortestVoyages.get(vessel), vessel);
                 if(currentPenalizedCost > highestPenalizedCostForShortestVoyages){
                     highestPenalizedCostForShortestVoyages = currentPenalizedCost;
-                    voyageToRemove = voyage;
+                    voyageToRemove = vessel;
                 }
             }
             voyageToBeTerminated = voyageToRemove;

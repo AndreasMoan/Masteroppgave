@@ -1,6 +1,8 @@
 package HGSADCwSO;
 
 
+import HGSADCwSO.protocols.FitnessEvaluationProtocol;
+
 import javax.sound.midi.Soundbank;
 import java.sql.SQLOutput;
 import java.util.ArrayList;
@@ -12,6 +14,9 @@ public class HGSADCwSOmain {
     private long startTime, stopTime;
     private ProblemData problemData;
     private Process process;
+
+    private double bestCost = Double.POSITIVE_INFINITY;
+    private double scheduleCost = Double.POSITIVE_INFINITY;
 
     private String[] args;
 
@@ -56,7 +61,7 @@ public class HGSADCwSOmain {
     }
 
     private void createInitialPopulation() {
-        int initialPopulationSize = 100; //TODO
+        int initialPopulationSize = problemData.getHeuristicParameterInt("Population size");
         for (int i = 0; i < initialPopulationSize; i++){
             Individual kid = process.createIndividual();
             process.educate(kid);
@@ -71,7 +76,7 @@ public class HGSADCwSOmain {
     private void runEvolutionaryLoop() {
         process.recordRunStatistics(0, feasiblePopulation, infeasiblePopulation, bestFeasibleIndividual);
         while (!stoppingCriterion()) {
-            System.out.println("Iteration " + iteration);
+            // System.out.println("Iteration " + iteration + "                 Best cost thus far: " + bestCost);
             evolve();
             process.recordRunStatistics(iteration, feasiblePopulation, infeasiblePopulation, bestFeasibleIndividual);
             iteration++;
@@ -79,8 +84,7 @@ public class HGSADCwSOmain {
     }
 
     private boolean stoppingCriterion() {
-        //TODO
-        return false;
+        return process.isStoppingIteration();
     }
 
     private void evolve() {
@@ -89,56 +93,57 @@ public class HGSADCwSOmain {
         process.educate(kid);
         process.repair(kid);
         boolean isImprovingSolution = addToSubpopulation(kid);
+        if (kid.getPenalizedCost() < bestCost) {
+            bestCost = kid.getPenalizedCost();
+            scheduleCost = kid.getScheduleCost();
+        }
+        System.out.println("Iteration " + iteration + ", Schedule cost: " + scheduleCost + ",  Best cost thus far: " + bestCost + ",      Cost this iteration: " + kid.getPenalizedCost() + ",      Chromosome: " + kid.getVesselTourChromosome());
         process.updateIterationsSinceImprovementCounter(isImprovingSolution);
         process.adjustPenaltyParameters(feasiblePopulation, infeasiblePopulation);
-        /*
+
         if (process.isDiversifyIteration()) {
             diversify(feasiblePopulation, infeasiblePopulation);
         }
-         */
     }
 
     private void diversify(ArrayList<Individual> feasiblePopulation, ArrayList<Individual> infeasiblePopulation) {
 
         System.out.println("Diversifying...");
 
-        genocide(feasiblePopulation, 2.0/3.0);
-        genocide(infeasiblePopulation, 2.0/3.0);
+        genocide(feasiblePopulation, infeasiblePopulation, 2.0/3.0);
+        genocide(infeasiblePopulation, feasiblePopulation,  2.0/3.0);
 
         System.out.println("Breeding new population...");
+
+        createInitialPopulation();
+
+        process.recordDiversification(iteration);
     }
 
-    private void genocide(ArrayList<Individual> population, double proportionToKill){
-
-        System.out.println(population.size());
-
-        population.sort(Utilities.getFitnessComparator());
-        int numberOfIndividualsToKill = (int) Math.round(population.size()*proportionToKill);
-        ArrayList<Individual> individualsToBeKilled = new ArrayList<>(population.subList(0,numberOfIndividualsToKill));
-        for (Individual individual : individualsToBeKilled) {
-            removeFromSubpopulation(individual, population);
-        }
+    private void genocide(ArrayList<Individual> subpopulation, ArrayList<Individual> otherSubpopulation, double proportionToKill){
+        subpopulation.sort(Utilities.getFitnessComparator());
+        int numberOfIndividualsToKill = (int) Math.round(subpopulation.size()*proportionToKill);
+        ArrayList<Individual> individualsToBeKilled = new ArrayList<>(subpopulation.subList(0,numberOfIndividualsToKill));
+        removeFromSubpopulation(subpopulation, otherSubpopulation, individualsToBeKilled);
     }
 
-    private void removeFromSubpopulation(Individual individual, ArrayList<Individual> population) {
-        population.remove(individual);
-    }
 
     public boolean addToSubpopulation(Individual kid) {
         boolean isImprovingSolution = false;
+        process.evaluate(kid);
 
         if (kid.isFeasible()) {
-            if ((bestFeasibleIndividual == null) || (kid.getFitness() < bestFeasibleIndividual.getFitness())) {
+            if ((bestFeasibleIndividual == null) || (kid.getPenalizedCost() < bestFeasibleIndividual.getPenalizedCost())) {
                 bestFeasibleIndividual = kid;
                 isImprovingSolution = true;
-            }
-            else {
-                isImprovingSolution = false;
             }
             feasiblePopulation.add(kid);
         }
         else {
-            isImprovingSolution = false;
+            if ((bestFeasibleIndividual == null) || (kid.getPenalizedCost() < bestFeasibleIndividual.getPenalizedCost())) {
+                bestFeasibleIndividual = kid;
+                isImprovingSolution = true;
+            }
             infeasiblePopulation.add(kid);
         }
         process.addDiversityDistance(kid);
@@ -157,17 +162,46 @@ public class HGSADCwSOmain {
         int maxPopulationSize = problemData.getHeuristicParameterInt("Population size")
                 + problemData.getHeuristicParameterInt("Number of offspring in a generation");
 
-        System.out.println(maxPopulationSize);
-
         if (subpopulation.size() + otherSubpopulation.size() >= maxPopulationSize) {
-            genocide(subpopulation, 3.0/4.0);
-            genocide(otherSubpopulation, 3.0/4.0);
+            genocide(subpopulation, otherSubpopulation, 3.0/4.0);
+            genocide(otherSubpopulation, subpopulation, 3.0/4.0);
+        }
+    }
+
+    private void removeFromSubpopulation(ArrayList<Individual> subpopulation, ArrayList<Individual> otherSubpopulation, ArrayList<Individual> individualsToKill) {
+
+        for (Individual individual : individualsToKill) {
+            HGSADCwSOmain.removeFromSubpopulation(subpopulation, individual, otherSubpopulation, process.getFitnessEvaluationProtocol(), false);
+        }
+    }
+
+    public static void removeFromSubpopulation(ArrayList<Individual> subpopulation, Individual individual, ArrayList<Individual> otherSubpopulation, FitnessEvaluationProtocol fitnessEvaluationProtocol, boolean updateFitness) {
+        subpopulation.remove(individual);
+        fitnessEvaluationProtocol.removeDiversityDistance(individual);
+
+        if (updateFitness){ // Updates fitness for all individuals
+            fitnessEvaluationProtocol.updateBiasedFitness(Utilities.getAllElements(subpopulation, otherSubpopulation));
         }
     }
 
     private void terminate() {
-        //TODO
+        System.out.println("Final population: ");
+        printPopulation();
+        printRunStatistics();
+        printBestSolution();
+        stopTime = System.nanoTime();
     }
 
+    private void printPopulation(){
+
+    }
+
+    private void printRunStatistics(){
+
+    }
+
+    private void printBestSolution() {
+
+    }
 
 }

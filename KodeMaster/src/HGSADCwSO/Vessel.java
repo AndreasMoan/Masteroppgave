@@ -5,7 +5,7 @@ public class Vessel {
     private String name;
     private int capacity, minSpeed, maxSpeed, timeCharterCost, number, returnDay;
 
-    public Vessel(String name, int capacity, int minSpeed, int maxSpeed, int timeCharterCost, int number) {
+    public Vessel(String name, int capacity, int minSpeed, int maxSpeed, int timeCharterCost, int number, int returnDay) {
         this.name = name;
         this.capacity = capacity;
         this.minSpeed = minSpeed;

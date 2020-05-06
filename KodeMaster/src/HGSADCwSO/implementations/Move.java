@@ -1,5 +1,6 @@
 package HGSADCwSO.implementations;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -52,7 +53,7 @@ public class Move {
 
     //remove u and place it after v
     private ArrayList<Integer> move1 (Integer u, Integer v, ArrayList<Integer> orders){
-        ArrayList<Integer> newOrders = new ArrayList<>(orders);
+        ArrayList<Integer> newOrders = new ArrayList<Integer>(orders);
         newOrders.remove(u);
         int indexV = newOrders.indexOf(v);
         newOrders.add(indexV+1, u);
@@ -61,7 +62,7 @@ public class Move {
 
     //remove u and x and place u and x after v
     private ArrayList<Integer> move2(Integer u, Integer v, Integer x, ArrayList<Integer> orders){
-        ArrayList<Integer> newOrders = new ArrayList<> (orders);
+        ArrayList<Integer> newOrders = new ArrayList<Integer> (orders);
         if (x!=null){ //if x is null, then u is the last element of the list of orders and no changes are performed
             newOrders.remove(u);
             newOrders.remove(x);
@@ -126,13 +127,13 @@ public class Move {
 
     //swap the position of x and v
     private ArrayList<Integer> move7(Integer v, Integer x, ArrayList<Integer> orders){
-        ArrayList<Integer> newOrders = new ArrayList<Integer>(orders);
-        if(x!=null){
-            int indexX = newOrders.indexOf(x);
-            int indexV = newOrders.indexOf(v);
-            Collections.swap(newOrders, indexX, indexV);
-        }
-        return newOrders;
+    ArrayList<Integer> newOrders = new ArrayList<Integer>(orders);
+    if(x!=null){
+        int indexX = newOrders.indexOf(x);
+        int indexV = newOrders.indexOf(v);
+        Collections.swap(newOrders, indexX, indexV);
+    }
+    return newOrders;
     }
 
 }
