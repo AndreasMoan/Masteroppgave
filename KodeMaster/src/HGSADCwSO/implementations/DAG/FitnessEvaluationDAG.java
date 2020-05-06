@@ -66,6 +66,7 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
 
     public void evaluate(Individual individual, double durationViolationPenalty, double capacityViolationPenalty, double deadlineViolationPenalty) {
 
+        individual.resetFeasability();
         Genotype genotype = individual.getGenotype();
         
         boolean feasibility = true;
@@ -115,15 +116,16 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
             }
         }
 
-        double durationViolationCost = durationViolation * durationViolationPenalty;
-        double deadlineViolationCost = deadlineViolation * deadlineViolationPenalty;
-        double capacityViolationCost = capacityViolation * capacityViolationPenalty;
 
         individual.setScheduleCost(scheduleCost);
-        individual.setDurationViolation(durationViolation, durationViolationCost);
-        individual.setDeadlineViolation(deadlineViolation, deadlineViolationCost);
-        individual.setCapacityViolation(capacityViolation, capacityViolationCost);
+        individual.setDurationViolation(durationViolation, durationViolationPenalty);
+        individual.setDeadlineViolation(deadlineViolation, deadlineViolationPenalty);
+        individual.setCapacityViolation(capacityViolation, capacityViolationPenalty);
         individual.setPenalizedCost();
+
+        //individual.setSchedule(schedule)
+
+        System.out.println("Schedule cost: " + scheduleCost + " penalized: " + individual.getPenalizedCost() + " || Violations | cap: " + capacityViolation + ", dead: "+ deadlineViolation + ", dur: "+ durationViolation);
     }
     
     public Graph getDAG(ArrayList<Integer> tour) {
@@ -206,9 +208,9 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
                 boolean nodeFeasibility =node.getFeasibility();
                 leastCost = node.getBestCost();
 
-                deadlineViolation = node.getBestTotalDeadlineViolation();
+                deadlineViolation = node.getBestTotalDeadlineViolation()/multiplier;
 
-                durationViolation = node.getTime() - vesselReturnTime;
+                durationViolation = Math.max(0, (node.getTime() - vesselReturnTime)/multiplier);
             }
 
 
@@ -253,5 +255,20 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
 
         return tempIndividual.getPenalizedCost();
     }
+/*
+    public Schedule getSolutionFromIndividual(Individual individual){
+        HashMap<Integer, ArrayList<Integer>> chromosome = individual.getVesselTourChromosome();
+
+        HashMap<Integer, ArrayList<SailingLeg>> sol = new HashMap<>();
+
+        for (int i = 0; i < chromosome.size(); i++){
+            sol.put(i, new ArrayList<SailingLeg>());
+            Graph graph = getDAG(chromosome.get(i));
+            doDijkstra(graph, problemData.getVesselByNumber().get(i).getReturnDay()*24*multiplier,);
+        }
+    }
+
+ */
+
 
 }

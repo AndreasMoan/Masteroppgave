@@ -97,6 +97,7 @@ public class HGSADCwSOmain {
             bestCost = kid.getPenalizedCost();
             scheduleCost = kid.getScheduleCost();
         }
+        System.out.println();
         System.out.println("Iteration " + iteration + ", Schedule cost: " + scheduleCost + ",  Best cost thus far: " + bestCost + ",      Cost this iteration: " + kid.getPenalizedCost() + ",      Chromosome: " + kid.getVesselTourChromosome());
         process.updateIterationsSinceImprovementCounter(isImprovingSolution);
         process.adjustPenaltyParameters(feasiblePopulation, infeasiblePopulation);
@@ -129,6 +130,7 @@ public class HGSADCwSOmain {
 
 
     public boolean addToSubpopulation(Individual kid) {
+        process.updatePenaltyAdjustmentCounter(kid);
         boolean isImprovingSolution = false;
         process.evaluate(kid);
 
@@ -201,6 +203,12 @@ public class HGSADCwSOmain {
     }
 
     private void printBestSolution() {
+        Individual winner = bestFeasibleIndividual;
+
+        System.out.println("Vessel tour chromosome" + winner.getVesselTourChromosome());
+
+        //process.getFitnessEvaluationProtocol().getSolutionFromIndividual(winner);
+        // process.getTourOfVessel
 
     }
 

@@ -31,16 +31,15 @@ public class PenaltyAdjustmentProtocol {
     public void countAddedIndividual(Individual individual) {
         solutionsSincePenaltyAdjustment++;
 
-        /*if (individual.isCapacityFeasible()){ //TODO flytt til stedet vi vil ha den. ligger foreløpig kommentert ut i Individualklassen
+        if (individual.isCapacityFeasibility()){ //TODO flytt til stedet vi vil ha den. ligger foreløpig kommentert ut i Individualklassen
             capacityFeasibleSolutions++;
         }
-        if (individual.isDurationFeasible()){ //TODO fiks funksjonen i individual-klassen
+        if (individual.isDurationFeasibility()){ //TODO fiks funksjonen i individual-klassen
             durationFeasibleSolutions++;
         }
-        if (individual.isDeadlineFeasible()){ //TODO fiks funksjonen i individual-klassen
+        if (individual.isDeadlineFeasibility()){ //TODO fiks funksjonen i individual-klassen
             deadlineFeasibleSolutions++;
         }
-            //System.out.println("Number of solutions since penalty adjustment: " + solutionsSincePenaltyAdjustment);*/
     }
 
 

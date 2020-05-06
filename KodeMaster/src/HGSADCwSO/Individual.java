@@ -26,9 +26,9 @@ public class Individual {
     private Set<Integer> departingVessels;
 
     private boolean feasibility;
-    private boolean capacityFeasibility;
-    private boolean durationFeasibility;
-    private boolean deadlineFeasibility;
+    private boolean capacityFeasibility = true;
+    private boolean durationFeasibility = true;
+    private boolean deadlineFeasibility= true;
 
     private int costRank;
     private int diversityRank;
@@ -78,18 +78,6 @@ public class Individual {
         this.feasibility = feasibility;
     }
 
-    public void setCapacityFeasibility(boolean capacityFeasibility) {
-        this.capacityFeasibility = capacityFeasibility;
-    }
-
-    public void setDeadlineFeasibility(boolean deadlineFeasibility) {
-        this.deadlineFeasibility = deadlineFeasibility;
-    }
-
-    public void setDurationFeasibility(boolean durationFeasibility) {
-        this.durationFeasibility = durationFeasibility;
-    }
-
     public void setFitness(double fitness) {
         this.fitness = fitness;
     }
@@ -121,6 +109,9 @@ public class Individual {
     public void setDurationViolation(double violation, double violationPenalty) {
         this.durationViolation = violation;
         this.durationViolationCost = violationPenalty*violation;
+        if (durationViolation > 0) {
+            this.durationFeasibility = false;
+        }
     }
 
     public double getCapacityViolation() {return capacityViolation; }
@@ -128,6 +119,9 @@ public class Individual {
     public void setCapacityViolation(double violation, double violationPenalty) {
         this.capacityViolation = violation;
         this.capacityViolationCost = violationPenalty*violation;
+        if (capacityViolation > 0) {
+            this.capacityFeasibility = false;
+        }
     }
 
     public double getDeadlineViolation() {
@@ -137,6 +131,9 @@ public class Individual {
     public void setDeadlineViolation(double deadlineViolation, double violationPenalty) {
         this.deadlineViolation = deadlineViolation;
         this.deadlineViolationCost = violationPenalty*deadlineViolation;
+        if (capacityViolation > 0) {
+            this.capacityFeasibility = false;
+        }
     }
 
     public double getBiasedFitness() {
@@ -185,5 +182,23 @@ public class Individual {
 
     public double getHeuristicCost() {
         return heuristicCost;
+    }
+
+    public void resetFeasability() {
+        this.durationFeasibility = true;
+        this.capacityFeasibility = true;
+        this.deadlineFeasibility = true;
+    }
+
+    public boolean isCapacityFeasibility() {
+        return capacityFeasibility;
+    }
+
+    public boolean isDeadlineFeasibility() {
+        return deadlineFeasibility;
+    }
+
+    public boolean isDurationFeasibility() {
+        return durationFeasibility;
     }
 }

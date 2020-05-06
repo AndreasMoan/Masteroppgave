@@ -20,6 +20,7 @@ public class FitnessEvaluationHeuristic extends FitnessEvaluationBaseline {
     }
 
     public void evaluate(Individual individual) {
+
         double devp = problemData.getHeuristicParameterDouble("Deadline constraint violation penalty");
         double duvp = problemData.getHeuristicParameterDouble("Duration constraint violation penalty");
         double cvp = problemData.getHeuristicParameterDouble("Capacity constraint violation penalty");
@@ -27,6 +28,8 @@ public class FitnessEvaluationHeuristic extends FitnessEvaluationBaseline {
     }
 
     public void evaluate(Individual individual, double durationViolationPenalty, double capacityViolationPenalty, double deadlineViolationPenalty) {
+
+        individual.resetFeasability();
         Genotype genotype = individual.getGenotype();
         int nVessels = problemData.getNumberOfVessels();
         double cost = 0;

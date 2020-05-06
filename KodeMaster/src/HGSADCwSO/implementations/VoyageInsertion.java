@@ -1,7 +1,5 @@
 package HGSADCwSO.implementations;
 
-import HGSADCwSO.Voyage;
-
 import java.util.ArrayList;
 
 

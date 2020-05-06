@@ -206,4 +206,8 @@ public class Process {
         diversificationProtocol.resetDiversificationCounter();
     }
 
+    public void updatePenaltyAdjustmentCounter(Individual individual) {
+        penaltyAdjustmentProtocol.countAddedIndividual(individual);
+    }
+
 }

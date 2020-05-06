@@ -2,7 +2,6 @@ package HGSADCwSO.protocols;
 
 import HGSADCwSO.Genotype;
 import HGSADCwSO.Individual;
-import HGSADCwSO.Voyage;
 
 import java.util.ArrayList;
 

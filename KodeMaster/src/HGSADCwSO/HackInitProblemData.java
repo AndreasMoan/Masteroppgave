@@ -41,30 +41,30 @@ public class HackInitProblemData {
 
         // Chances
 
-        heuristicInstanceParameters.put("Education rate", "1");
-        heuristicInstanceParameters.put("Repair rate", "1");
+        heuristicInstanceParameters.put("Education rate", "0.3");
+        heuristicInstanceParameters.put("Repair rate", "0.8");
 
         // Discretization:
 
-        heuristicInstanceParameters.put("Number of time periods per hour", "3");
+        heuristicInstanceParameters.put("Number of time periods per hour", "10");
 
         // Penalty costs
 
         heuristicInstanceParameters.put("Factor to increase penalties with", "1,2");
         heuristicInstanceParameters.put("Factor to decrease penalties with", "0,85");
 
-        heuristicInstanceParameters.put("Capacity constraint violation penalty", "100"); //TODO - sett en god verdi
-        heuristicInstanceParameters.put("Duration constraint violation penalty", "50"); //TODO - sett en god verdi
-        heuristicInstanceParameters.put("Deadline constraint violation penalty", "20");
+        heuristicInstanceParameters.put("Capacity constraint violation penalty", "1000"); //TODO - sett en god verdi
+        heuristicInstanceParameters.put("Duration constraint violation penalty", "500"); //TODO - sett en god verdi
+        heuristicInstanceParameters.put("Deadline constraint violation penalty", "200");
 
         // Stopping and diversification
 
         heuristicInstanceParameters.put("Iterations before diversify","300");
-        heuristicInstanceParameters.put("Iterations before stopping","5000");
+        heuristicInstanceParameters.put("Iterations before stopping","10000");
 
         // Neighbourhood
         heuristicInstanceParameters.put("Proportion of individuals considered for distance evaluation", "0,2");
-        heuristicInstanceParameters.put("Granularity threshold in RI", "0,4"); //share of neighbourhood
+        heuristicInstanceParameters.put("Granularity threshold in RI", "0,2"); //share of neighbourhood
 
         //Cache
         heuristicInstanceParameters.put("Max cached tours per vessel", "500");
