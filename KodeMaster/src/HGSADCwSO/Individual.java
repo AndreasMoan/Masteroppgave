@@ -2,8 +2,6 @@ package HGSADCwSO;
 
 import HGSADCwSO.protocols.FitnessEvaluationProtocol;
 
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,19 +9,9 @@ import java.util.Set;
 
 public class Individual {
 
-    private double penalizedCost;
-    private double scheduleCost;
-    private double durationViolation;
-    private double capacityViolation;
-    private double deadlineViolation;
-    private double durationViolationCost;
-    private double capacityViolationCost;
-    private double deadlineViolationCost;
-    private double fitness;
-
-    private double heuristicCost;
-
+    private double penalizedCost, scheduleCost, durationViolation, capacityViolation, deadlineViolation;
     private Set<Integer> departingVessels;
+    private double fitness;
 
     private boolean feasibility;
     private boolean capacityFeasibility;
@@ -35,19 +23,18 @@ public class Individual {
     private double biasedFitness;
     private double diversityContribution;
 
-    private Genotype genotype;
 
-    private FitnessEvaluationProtocol fitnessEvaluationProtocol;
 
-    public Individual(HashMap<Integer, ArrayList<Integer>>  vesselTourChromosome, FitnessEvaluationProtocol fitnessEvaluationProtocol) {
-        this.genotype = new Genotype(vesselTourChromosome);
-        this.fitnessEvaluationProtocol = fitnessEvaluationProtocol;
+    private HashMap<Integer, ArrayList<Integer>> vesselTourChromosome;
+
+    public Individual(HashMap<Integer, ArrayList<Integer>> vesselTourChromosome, FitnessEvaluationProtocol fitnessEvaluationProtocol) {
+        this.vesselTourChromosome = vesselTourChromosome;
+        fitnessEvaluationProtocol.evaluate(this);
         setDepartingVessels();
     }
 
     private void setDepartingVessels(){
         Set<Integer> departingSet = new HashSet<>(); //initializing departingVessels
-        HashMap<Integer, ArrayList<Integer>> vesselTourChromosome = new HashMap<>(getVesselTourChromosome());
         for (Integer vessel : vesselTourChromosome.keySet()){
             if (vesselTourChromosome.get(vessel).size()>0){
                 departingSet.add(vessel);
@@ -56,45 +43,28 @@ public class Individual {
         this.departingVessels = new HashSet<>(departingSet);
     }
 
-    public Set<Integer> getDepartingVessels() {return departingVessels;}
+    public Set<Integer> getDepartingVessels() {
+        return departingVessels;
+    }
 
     public HashMap<Integer, ArrayList<Integer>> getVesselTourChromosome() {
-        return genotype.getVesselTourChromosome();
+        return vesselTourChromosome;
     }
 
-    public void setVesselTourChromosome(HashMap<Integer, ArrayList<Integer>> vesselTour){
-        this.genotype.setVesselTourChromosome(vesselTour);
-    }
-
-    public Genotype getGenotype() {
-        return genotype;
+    public void setVesselTourChromosome(HashMap<Integer, ArrayList<Integer>> vesselTour) {
+        this.vesselTourChromosome = vesselTour;
+        setDepartingVessels();
     }
 
     public double getFitness() {
         return fitness;
     }
 
-    public void setFeasibility(boolean feasibility) {
-        this.feasibility = feasibility;
-    }
-
-    public void setCapacityFeasibility(boolean capacityFeasibility) {
-        this.capacityFeasibility = capacityFeasibility;
-    }
-
-    public void setDeadlineFeasibility(boolean deadlineFeasibility) {
-        this.deadlineFeasibility = deadlineFeasibility;
-    }
-
-    public void setDurationFeasibility(boolean durationFeasibility) {
-        this.durationFeasibility = durationFeasibility;
-    }
-
     public void setFitness(double fitness) {
         this.fitness = fitness;
     }
 
-    public boolean isFeasible(){
+    public boolean isFeasible() {
         return feasibility;
     }
 
@@ -102,88 +72,113 @@ public class Individual {
         return penalizedCost;
     }
 
-    public void setPenalizedCost() {
-        penalizedCost = scheduleCost + durationViolationCost + deadlineViolationCost + capacityViolationCost;
+    public void setPenalizedCost(Double cost) {
+        penalizedCost = cost;
     }
 
-    /*
+    public void setDepartingVessels(Set<Integer> departingVessels) {
+        this.departingVessels = departingVessels;
+    }
+
+
     public void updatePenalizedCostForChromosome(FitnessEvaluationProtocol fitnessEvaluationProtocol) {
         fitnessEvaluationProtocol.setPenalizedCostIndividual(this);
     }
-    */
 
-    public double getScheduleCost() {return scheduleCost; }
-
-    //public void setScheduleCost() {this.scheduleCost = fitnessEvaluationProtocol.evaluate(this);}
-
-    public double getDurationViolation() {return durationViolation; }
-
-    public void setDurationViolation(double violation, double violationPenalty) {
-        this.durationViolation = violation;
-        this.durationViolationCost = violationPenalty*violation;
+    public double getScheduleCost() {
+        return scheduleCost;
     }
 
-    public double getCapacityViolation() {return capacityViolation; }
+    public void setScheduleCost(double cost) {
+        this.scheduleCost = cost;
+    }
 
-    public void setCapacityViolation(double violation, double violationPenalty) {
+    public double getDurationViolation() {
+        return durationViolation;
+    }
+
+    public void setDurationViolation(double violation) {
+        this.durationViolation = violation;
+    }
+
+    public double getCapacityViolation() {
+        return capacityViolation;
+    }
+
+    public void setCapacityViolation(double violation) {
         this.capacityViolation = violation;
-        this.capacityViolationCost = violationPenalty*violation;
     }
 
     public double getDeadlineViolation() {
         return deadlineViolation;
     }
 
-    public void setDeadlineViolation(double deadlineViolation, double violationPenalty) {
-        this.deadlineViolation = deadlineViolation;
-        this.deadlineViolationCost = violationPenalty*deadlineViolation;
+    public void setDeadlineViolation(double violation) {
+        this.deadlineViolation = violation;
     }
 
-    public double getBiasedFitness() {
-        return biasedFitness;
+    public  boolean getCapacityFeasibility() {
+        return capacityFeasibility;
     }
 
-    public double getDiversityContribution() {
-        return diversityContribution;
+    /*
+    public boolean isCapacityFeasible() { //TODO - Legg til denne koden i fitnessevaluation
+        boolean noCapacityViolation = true;
+
+        for (Integer vessel : vesselTourChromosome.keySet()){
+            Vessel vessel1 = problemData.getVesselByNumber(vessel);
+            int totalLoad = 0;
+
+            for (Integer order : vesselTourChromosome.get(vessel)){
+                Order order1 = problemData.getOrdersByNumber().get(order);
+                totalLoad += order1.getDemand();
+            }
+            if (totalLoad > vessel1.getCapacity()){noCapacityViolation = false;}
+        }
+        this.capacityFeasibility = noCapacityViolation;
+        return capacityFeasibility;
+    }
+     */
+
+    public boolean getDurationFeasibility() { //TODO
+        return durationFeasibility;
     }
 
-    public int getCostRank() {
-        return costRank;
-    }
-
-    public int getDiversityRank() {
-        return diversityRank;
-    }
-
-    public void setPenalizedCost(double penalizedCost) {
-        this.penalizedCost = penalizedCost;
-    }
-
-    public void setScheduleCost(double scheduleCost) {
-        this.scheduleCost = scheduleCost;
-    }
-
-    public void setBiasedFitness(double biasedFitness) {
-        this.biasedFitness = biasedFitness;
+    public boolean getDeadlineFeasibility() { //TODO}
+        return deadlineFeasibility;
     }
 
     public void setCostRank(int costRank) {
         this.costRank = costRank;
     }
 
-    public void setDiversityContribution(double diversityContribution) {
-        this.diversityContribution = diversityContribution;
+    public int getCostRank(){return costRank;}
+
+    public void setBiasedFitness(double biasedFitness) {
+        this.biasedFitness = biasedFitness;
+    }
+
+    public double getBiasedFitness(){return biasedFitness;}
+
+    public void setDiversityContribution(double diversityContribution){
+        this.diversityContribution = diversityContribution;}
+
+    public double getDiversityContribution() {
+        return diversityContribution;
     }
 
     public void setDiversityRank(int diversityRank) {
         this.diversityRank = diversityRank;
     }
 
-    public void setHeuristicCost(double heuristicCost) {
-        this.heuristicCost = heuristicCost;
+    public int getDiversityRank() { return diversityRank; }
+
+    /*public double getFactorToIncreaseUpdatedPenalitiesWith(){
+        return
     }
 
-    public double getHeuristicCost() {
-        return heuristicCost;
-    }
+    public void setGetFactorToDecreaseUpdatedPenalitiesWith(){
+        return
+    }*/
 }
+

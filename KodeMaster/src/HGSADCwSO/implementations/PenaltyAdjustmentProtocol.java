@@ -17,8 +17,8 @@ public class PenaltyAdjustmentProtocol {
     private double factorToIncreasePenaltiesWith, factorToDecreasePenaltiesWith;
 
 
-    public PenaltyAdjustmentProtocol(ProblemData problemData) {
-        this.targetFeasibleProportion = problemData.getHeuristicParameterDouble("Target feasible proportion");
+    public PenaltyAdjustmentProtocol(double targetFeasibleProportion, ProblemData problemData) {
+        this.targetFeasibleProportion = targetFeasibleProportion;
         this.solutionsSincePenaltyAdjustment = 0;
         this.capacityFeasibleSolutions = 0;
         this.durationFeasibleSolutions = 0;
@@ -31,7 +31,7 @@ public class PenaltyAdjustmentProtocol {
     public void countAddedIndividual(Individual individual) {
         solutionsSincePenaltyAdjustment++;
 
-        /*if (individual.isCapacityFeasible()){ //TODO flytt til stedet vi vil ha den. ligger foreløpig kommentert ut i Individualklassen
+        if (individual.isCapacityFeasible()){
             capacityFeasibleSolutions++;
         }
         if (individual.isDurationFeasible()){ //TODO fiks funksjonen i individual-klassen
@@ -40,11 +40,12 @@ public class PenaltyAdjustmentProtocol {
         if (individual.isDeadlineFeasible()){ //TODO fiks funksjonen i individual-klassen
             deadlineFeasibleSolutions++;
         }
-            //System.out.println("Number of solutions since penalty adjustment: " + solutionsSincePenaltyAdjustment);*/
+            //System.out.println("Number of solutions since penalty adjustment: " + solutionsSincePenaltyAdjustment);
     }
 
 
     public void adjustPenalties(ArrayList<Individual> entirePopulation, FitnessEvaluationProtocol fitnessProtocol){
+
         if (solutionsSincePenaltyAdjustment >= 100){
             System.out.println("Adjusting penalty parameters...");
 

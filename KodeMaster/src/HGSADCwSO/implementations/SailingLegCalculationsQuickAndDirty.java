@@ -42,25 +42,25 @@ public class SailingLegCalculationsQuickAndDirty implements SailingLegCalculatio
 
         //Servicing:
 
-        double consumptionFactor = problemData.getProblemInstanceParameterDouble("Servicing consumption");
+        double consumptionFactor = Utilities.parseDouble(problemData.getHeuristicParameters().get("ServicingConsumption"));
         double servicingTimeLeft = (double)demand/10;
 
         while (servicingTimeLeft -1 > 0) {
             if (time - Math.floor(time) > 0) {
-                consumption += consumptionFactor * (time - Math.floor(time)) * problemData.getWeatherImpactByHour((int) Math.floor(time));
+                consumption += consumptionFactor*(time-Math.floor(time))*problemData.getWeatherImpactByHour((int)Math.floor(time));
                 servicingTimeLeft -= (1 - (time - Math.floor(time)));
                 time = Math.ceil(time);
-            } else {
-                consumption += consumptionFactor * problemData.getWeatherImpactByHour((int) Math.floor(time));
+            }
+            else {
+                consumption += consumptionFactor*problemData.getWeatherImpactByHour((int)Math.floor(time));
                 servicingTimeLeft--;
                 time++;
             }
+            if (servicingTimeLeft > 0){
+                consumption += consumptionFactor*servicingTimeLeft*problemData.getWeatherImpactByHour((int)Math.floor(time));
+                time += servicingTimeLeft;
+            }
         }
-        if (servicingTimeLeft > 0){
-            consumption += consumptionFactor*servicingTimeLeft*problemData.getWeatherImpactByHour((int)Math.floor(time));
-            time += servicingTimeLeft;
-        }
-
 
         this.fuelConsumption = consumption;
         this.arrivalTime = time;

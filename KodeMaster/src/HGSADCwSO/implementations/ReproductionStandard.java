@@ -23,8 +23,10 @@ public class ReproductionStandard implements ReproductionProtocol {
 
     public Individual crossover(ArrayList<Individual> parents) {
 
-        //lager denne én mer enn
-        Set<Integer> allOrders = new HashSet<Integer>(problemData.getOrdersByNumber().keySet());
+        Set<Integer> allOrders = new HashSet<Integer>();
+        for (int i = 0; i < problemData.getOrdersByNumber().size(); i++) {
+            allOrders.add(i); //lager denne én mer enn
+        }
 
         // STEP 0: Inheritance rule
         int nVessels = problemData.getVessels().size();
@@ -59,8 +61,8 @@ public class ReproductionStandard implements ReproductionProtocol {
             }
         }
 
-        HashMap<Integer, ArrayList<Integer>> father = Utilities.deepCopyVesselTour(parents.get(0).getVesselTourChromosome());
-        HashMap<Integer, ArrayList<Integer>> mother = Utilities.deepCopyVesselTour(parents.get(1).getVesselTourChromosome());
+        HashMap<Integer, ArrayList<Integer>> father = parents.get(0).getVesselTourChromosome();
+        HashMap<Integer, ArrayList<Integer>> mother = parents.get(1).getVesselTourChromosome();
 
         HashMap<Integer, ArrayList<Integer>> kid = new HashMap<Integer, ArrayList<Integer>>();
         for (int i = 0; i < problemData.getNumberOfVessels(); i++) {
@@ -189,6 +191,12 @@ public class ReproductionStandard implements ReproductionProtocol {
             }
             kid.get(bestInsertionVessel).add(bestInsertionPosition,orderNumber);
         }
+
+        //Educate
+
+        //Repair
+
+        //Insert into subpopulation
         return new Individual(kid, fitnessEvaluationProtocol);
     }
 

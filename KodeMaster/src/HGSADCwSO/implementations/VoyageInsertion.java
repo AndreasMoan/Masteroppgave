@@ -1,7 +1,5 @@
 package HGSADCwSO.implementations;
 
-import HGSADCwSO.Voyage;
-
 import java.util.ArrayList;
 
 
@@ -15,7 +13,6 @@ public class VoyageInsertion {
         this.orderNumber = orderNumber;
         this.positionInVoyageToInsertInto = positionInVoyageToInsertInto;
         this.insertionCost = insertionCost;
-
         this.vessel = vessel;
     }
 

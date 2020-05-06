@@ -13,7 +13,7 @@ public class Order {
         this.day = day;
         this.installation = installation;
         this.number = number;
-        this.deadline = deadline;
+        this.deadline = Integer.MAX_VALUE; //TODO - denne må vi gå over
     }
 
     public Installation getInstallation() {
@@ -32,7 +32,5 @@ public class Order {
         return number;
     }
 
-    public int getDeadline() {
-        return deadline;
-    }
+    public int getDeadline() { return deadline; }
 }

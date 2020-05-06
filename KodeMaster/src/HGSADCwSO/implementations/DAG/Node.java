@@ -4,28 +4,21 @@ import java.util.ArrayList;
 
 public class Node {
 
-    private int time;
+    private double time;
     private int orderNumber;
     private ArrayList<Edge> parentEdges;
     private ArrayList<Edge> childEdges;
 
     private double bestCost;
-    private double bestPenalizedCost;
     private Edge bestParentEdge;
-
-    private double bestTotalDeadlineViolation;
-    private double deadlineViolation;
 
     private boolean feasibility;
 
-    public Node(int time, int orderNumber, double deadlineViolation){
+    public Node(double time, int orderNumber){
         this.time = time;
         this.orderNumber = orderNumber;
-        this.deadlineViolation = deadlineViolation;
         this.childEdges = new ArrayList<Edge>();
         this.parentEdges = new ArrayList<Edge>();
-        this.setBestCost(Double.POSITIVE_INFINITY);
-        this.setBestPenalizedCost(Double.POSITIVE_INFINITY);
     }
 
     public void setFeasibility(boolean feasibility) {
@@ -52,7 +45,7 @@ public class Node {
         return childEdges;
     }
 
-    public int getTime() {
+    public double getTime() {
         return time;
     }
 
@@ -74,29 +67,5 @@ public class Node {
 
     public void setBestParentEdge(Edge bestParentEdge) {
         this.bestParentEdge = bestParentEdge;
-    }
-
-    public double getDeadlineViolation() {
-        return deadlineViolation;
-    }
-
-    public void setDeadlineViolation(int deadlineViolation) {
-        this.deadlineViolation = deadlineViolation;
-    }
-
-    public double getBestTotalDeadlineViolation() {
-        return bestTotalDeadlineViolation;
-    }
-
-    public void setBestTotalDeadlineViolation(double totalDeadlineViolation) {
-        this.bestTotalDeadlineViolation = bestTotalDeadlineViolation;
-    }
-
-    public void setBestPenalizedCost(double bestPenalizedCost) {
-        this.bestPenalizedCost = bestPenalizedCost;
-    }
-
-    public double getBestPenalizedCost() {
-        return bestPenalizedCost;
     }
 }
