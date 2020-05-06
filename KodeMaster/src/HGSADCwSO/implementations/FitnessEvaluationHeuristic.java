@@ -5,6 +5,7 @@ import HGSADCwSO.protocols.FitnessEvaluationProtocol;
 import HGSADCwSO.protocols.SailingLegCalculationsProtocol;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class FitnessEvaluationHeuristic extends FitnessEvaluationBaseline {
 
@@ -42,14 +43,12 @@ public class FitnessEvaluationHeuristic extends FitnessEvaluationBaseline {
             durationViolation += info[3];
         }
 
-
-
         individual.setScheduleCost(cost);
         individual.setFeasibility(true);
         individual.setCapacityViolation(capacityViolation, capacityViolationPenalty);
         individual.setDeadlineViolation(deadlineViolation, deadlineViolationPenalty);
         individual.setDurationViolation(durationViolation, durationViolationPenalty);
-        individual.getPenalizedCost();
+        individual.setPenalizedCost();
     }
 
 
@@ -119,7 +118,33 @@ public class FitnessEvaluationHeuristic extends FitnessEvaluationBaseline {
     }
 
     @Override
-    public void setPenalizedCostIndividual(Individual individual){
-        individual.setHeuristicCost(0);
+    public void setPenalizedCostIndividual(Individual individual, double durationViolationPenalty, double capacityViolationPenalty, double deadlineViolationPenalty) {
+        evaluate(individual, durationViolationPenalty, capacityViolationPenalty, deadlineViolationPenalty);
     }
+
+    @Override
+    public void setPenalizedCostIndividual(Individual individual) {
+        evaluate(individual);
+    }
+
+    @Override
+    public double getPenalizedCostOfVoyage(ArrayList<Integer> orderSequence, int vessel, double durationViolationPenalty, double capacityViolationPenalty, double deadlineViolationPenalty) {
+
+        HashMap<Integer, ArrayList<Integer>> tempChromosome = new HashMap<>();
+        for (int i = 0; i < problemData.getNumberOfVessels(); i ++){
+            if (i == vessel) {
+                tempChromosome.put(i, orderSequence);
+            }
+            else {
+                tempChromosome.put(i, new ArrayList<>());
+            }
+        }
+
+        Individual tempIndividual = new Individual(tempChromosome,this);
+
+        evaluate(tempIndividual, durationViolationPenalty, capacityViolationPenalty, deadlineViolationPenalty);
+
+        return tempIndividual.getPenalizedCost();
+    }
+
 }

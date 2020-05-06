@@ -42,30 +42,33 @@ public class HackInitProblemData {
         // Chances
 
         heuristicInstanceParameters.put("Education rate", "1");
-        heuristicInstanceParameters.put("Repair rate", "0,75");
+        heuristicInstanceParameters.put("Repair rate", "1");
 
         // Discretization:
 
-        heuristicInstanceParameters.put("Number of time periods per hour", "4");
+        heuristicInstanceParameters.put("Number of time periods per hour", "3");
 
         // Penalty costs
 
         heuristicInstanceParameters.put("Factor to increase penalties with", "1,2");
         heuristicInstanceParameters.put("Factor to decrease penalties with", "0,85");
 
-        heuristicInstanceParameters.put("Cost penalty per excessive time period","10");
-        heuristicInstanceParameters.put("Capacity constraint violation penalty", "10000"); //TODO - sett en god verdi
-        heuristicInstanceParameters.put("Duration constraint violation penalty", "5"); //TODO - sett en god verdi
-        heuristicInstanceParameters.put("Deadline constraint violation penalty", "5");
+        heuristicInstanceParameters.put("Capacity constraint violation penalty", "100"); //TODO - sett en god verdi
+        heuristicInstanceParameters.put("Duration constraint violation penalty", "50"); //TODO - sett en god verdi
+        heuristicInstanceParameters.put("Deadline constraint violation penalty", "20");
 
         // Stopping and diversification
 
         heuristicInstanceParameters.put("Iterations before diversify","300");
-        heuristicInstanceParameters.put("Iterations before stopping","2000");
+        heuristicInstanceParameters.put("Iterations before stopping","5000");
 
         // Neighbourhood
         heuristicInstanceParameters.put("Proportion of individuals considered for distance evaluation", "0,2");
         heuristicInstanceParameters.put("Granularity threshold in RI", "0,4"); //share of neighbourhood
+
+        //Cache
+        heuristicInstanceParameters.put("Max cached tours per vessel", "500");
+        heuristicInstanceParameters.put("Max cached graphs", "2000");
 
 
 
@@ -73,6 +76,8 @@ public class HackInitProblemData {
 
         vessels.add(new Vessel("PSV1", 100, 7, 14, 0, 0, 3));
         vessels.add(new Vessel("PSV2", 100, 7, 14, 0, 1, 2));
+        vessels.add(new Vessel("PSV3", 100, 7, 14, 0, 2, 3));
+
 
         /*
         vessels.add(new Vessel("PSV1", 100, 7, 14, 0, 0, 4));
@@ -114,15 +119,22 @@ public class HackInitProblemData {
         installations.add(new Installation("SOD", 0,23, 27));
         ArrayList<Order> orders = new ArrayList<Order>();
 
-        orders.add(new Order(30,0, installations.get(4),1, 3));
-        orders.add(new Order(30,0, installations.get(16),2, 3));
-        orders.add(new Order(30,0, installations.get(11),3, 3));
-        orders.add(new Order(30,0, installations.get(17),4, 3));
+        orders.add(new Order(17,0, installations.get(4),1, 3));
+        orders.add(new Order(11,0, installations.get(16),2, 3));
+        orders.add(new Order(28,0, installations.get(11),3, 3));
+        orders.add(new Order(5,0, installations.get(17),4, 3));
         orders.add(new Order(30,0, installations.get(20),5, 3));
-        orders.add(new Order(30,0, installations.get(21),6, 3));
-        orders.add(new Order(30,0, installations.get(26),7, 3));
-        orders.add(new Order(40,0, installations.get(9), 8, 3));
-        orders.add(new Order(30,0, installations.get(1), 9, 3));
+        orders.add(new Order(14,0, installations.get(21),6, 3));
+        orders.add(new Order(18,0, installations.get(26),7, 3));
+        orders.add(new Order(22,0, installations.get(9), 8, 3));
+        orders.add(new Order(15,0, installations.get(1), 9, 3));
+        orders.add(new Order(18,0, installations.get(2),10, 3));
+        orders.add(new Order(19,0, installations.get(3),11, 3));
+        orders.add(new Order(20,0, installations.get(22),12, 3));
+        orders.add(new Order(26,0, installations.get(12),13, 3));
+        orders.add(new Order(4,0, installations.get(13),14, 3));
+        orders.add(new Order(20,0, installations.get(18),15, 3));
+        orders.add(new Order(8,0, installations.get(15),16, 3));
 
 
         HashMap<Installation, HashMap<Installation, Double>> distances = new HashMap<Installation, HashMap<Installation, Double>>();

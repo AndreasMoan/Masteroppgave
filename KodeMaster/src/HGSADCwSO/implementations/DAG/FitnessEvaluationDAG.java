@@ -5,6 +5,7 @@ import HGSADCwSO.implementations.FitnessEvaluationBaseline;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static java.lang.Math.max;
@@ -14,27 +15,45 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
 
     private ProblemData problemData;
     
-    private DAGSolver solver;
-    
     private double nCloseProp;
     protected double nEliteProp;
     private double numberOfOrders;
     private HashMap<Individual, HashMap<Individual, Double>> hammingDistances;
 
     private int multiplier;
+    private int maxSizeCachedVesselTours;
+    private int maxSizeCachedGraphs;
 
-    private HashMap<Integer, HashMap<ArrayList<Integer>, double[]>> cachedVesselTours = new HashMap<>();
-    private HashMap<ArrayList<Integer>, Graph> cachedGraphs = new HashMap<>();
+    private HashMap<Integer, LinkedHashMap<ArrayList<Integer>, double[]>> cachedVesselTours= new HashMap<>();
+
+    final LinkedHashMap<ArrayList<Integer>, Graph> cachedGraphs = new LinkedHashMap<ArrayList<Integer>, Graph>() {
+        @Override
+        protected boolean removeEldestEntry(final Map.Entry eldest) {
+            return size() > maxSizeCachedGraphs;
+        }
+    };
     
     // EVT [0] = fitness, [1] = duration violation, [2] = deadline violation, [3] = capacity violation
 
     public FitnessEvaluationDAG(ProblemData problemData){
         super(problemData);
         this.problemData = problemData;
-        for (int i = 0; i < problemData.getNumberOfVessels(); i++){
-            cachedVesselTours.put(i, new HashMap<>());
-        }
         this.multiplier = (int) problemData.getHeuristicParameterDouble("Number of time periods per hour");
+
+        maxSizeCachedVesselTours = problemData.getHeuristicParameterInt("Max cached tours per vessel");
+        maxSizeCachedGraphs = problemData.getHeuristicParameterInt("Max cached graphs");
+
+        for (int i = 0; i < problemData.getNumberOfVessels(); i++) {
+
+            cachedVesselTours.put(i,
+                    new LinkedHashMap<ArrayList<Integer>, double[]>() {
+                        @Override
+                        protected boolean removeEldestEntry(final Map.Entry eldest) {
+                            return size() > maxSizeCachedVesselTours;
+                        }
+                    }
+            );
+        }
     }
 
     @Override
@@ -77,9 +96,9 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
                     doDijkstra(graph, vessel.getReturnDay()*24*multiplier, durationViolationPenalty, deadlineViolationPenalty); //TODO check correct return time
                     double[] vesselTourInfo = getTourInfo(graph, vessel.getReturnDay()*24*multiplier);
 
-                    scheduleCost = vesselTourInfo[0];
-                    durationViolation = vesselTourInfo[1];
-                    deadlineViolation = vesselTourInfo[2];
+                    scheduleCost += vesselTourInfo[0];
+                    durationViolation += vesselTourInfo[1];
+                    deadlineViolation += vesselTourInfo[2];
 
 
                     double capacityReqOfTour = 0;
@@ -90,6 +109,8 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
                     capacityViolation += Math.max(0, capacityReqOfTour - vessel.getCapacity());
 
                     cachedVesselTours.get(vessel.getNumber()).put(tour, new double[] {scheduleCost, durationViolation, deadlineViolation, capacityViolation});
+
+                    //System.out.println("Size of vessel tour cache for vessel number " + vessel.getNumber() + " is: " + cachedVesselTours.get(vessel.getNumber()).size());
                 }
             }
         }
@@ -113,6 +134,8 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
             // System.out.println("Tour : " + tour);
             Graph graph = new Graph(tour, problemData);
             cachedGraphs.put(tour, graph);
+
+            // System.out.println("Size of graph cache: " + cachedGraphs.size());
             return graph;
         }
     }
@@ -125,14 +148,11 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
         // System.out.println("================================== DIJKSTRA ======================================");
 
         for (int i = 0; i < graph.getSize(); i++) {
-            // System.out.println("1 ------");
             for (Map.Entry<Integer, Node> pair : graph.getGraph().get(i).entrySet()){
-                // System.out.println("2");
-                // System.out.println(pair.getValue().getChildEdges().size());
-
                 expand(pair.getValue(), deadlineViolationPenalty);
             }
         }
+
         for (Map.Entry<Integer, Node> entry : graph.getGraph().get(graph.getSize()-1).entrySet()){
             double nodeTime = entry.getValue().getTime();
             double nodeCost = entry.getValue().getBestCost();
@@ -147,15 +167,17 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
     }
 
     private void expand(Node node, double deadlineViolationPenalty) {
+
         for (Edge childEdge : node.getChildEdges()){
             // System.out.println("3 !!!!");
 
             Node childNode = childEdge.getChildNode();
 
-            double childNodeDeadlinePenaltyCost = (childNode.getBestTotalDeadlineViolation() + node.getDeadlineViolation()) * deadlineViolationPenalty;
+            double childNodeDeadlinePenaltyCost = childNode.getDeadlineViolation() * deadlineViolationPenalty;
 
-            if (childNode.getBestCost() > node.getBestCost() + childEdge.getCost() + childNodeDeadlinePenaltyCost) {
-                childNode.setBestCost(node.getBestCost() + childEdge.getCost() + childNodeDeadlinePenaltyCost);
+            if (childNode.getBestPenalizedCost() > node.getBestPenalizedCost() + childEdge.getCost() + childNodeDeadlinePenaltyCost) {
+                childNode.setBestPenalizedCost(node.getBestPenalizedCost() + childEdge.getCost() + childNodeDeadlinePenaltyCost);
+                childNode.setBestCost(node.getBestCost() + childEdge.getCost());
                 childNode.setBestParentEdge(childEdge);
                 childNode.setBestTotalDeadlineViolation(childNode.getDeadlineViolation() + node.getBestTotalDeadlineViolation());
                 // System.out.println("Parent node cost: " + node.getBestCost() + ", Edge cost: " + childEdge.getCost() + ", Child node cost: " + childEdge.getChildNode().getBestCost());
@@ -180,7 +202,7 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
 
         for ( Map.Entry<Integer, Node> entry : graph.getGraph().get(graph.getSize()-1).entrySet()){
             Node node = entry.getValue();
-            if (node.getBestCost() < leastCost) {
+            if (node.getBestPenalizedCost() < leastCost) {
                 boolean nodeFeasibility =node.getFeasibility();
                 leastCost = node.getBestCost();
 

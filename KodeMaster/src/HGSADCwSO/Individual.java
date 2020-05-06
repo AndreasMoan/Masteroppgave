@@ -118,25 +118,25 @@ public class Individual {
 
     public double getDurationViolation() {return durationViolation; }
 
-    public void setDurationViolation(double violation, double violationCost) {
+    public void setDurationViolation(double violation, double violationPenalty) {
         this.durationViolation = violation;
-        this.durationViolationCost = violationCost;
+        this.durationViolationCost = violationPenalty*violation;
     }
 
     public double getCapacityViolation() {return capacityViolation; }
 
-    public void setCapacityViolation(double violation, double violationCost) {
+    public void setCapacityViolation(double violation, double violationPenalty) {
         this.capacityViolation = violation;
-        this.capacityViolationCost = violationCost;
+        this.capacityViolationCost = violationPenalty*violation;
     }
 
     public double getDeadlineViolation() {
         return deadlineViolation;
     }
 
-    public void setDeadlineViolation(double deadlineViolation, double violationCost) {
+    public void setDeadlineViolation(double deadlineViolation, double violationPenalty) {
         this.deadlineViolation = deadlineViolation;
-        this.deadlineViolationCost = violationCost;
+        this.deadlineViolationCost = violationPenalty*deadlineViolation;
     }
 
     public double getBiasedFitness() {

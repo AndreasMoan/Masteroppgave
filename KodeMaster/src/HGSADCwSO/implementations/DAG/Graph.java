@@ -34,8 +34,6 @@ public class Graph {
 
     private HashMap<Integer, Order> orderByNumber;
 
-    private HashMap<ArrayList<Integer>, DAGSolver> cachedGraphs;
-
 
     public Graph(ArrayList<Integer> voyage, ProblemData problemData) {
         this.voyage = voyage;
@@ -82,6 +80,7 @@ public class Graph {
 
         graph.get(0).put(0, new Node(0,0, 0));
         graph.get(0).get(0).setBestCost(0);
+        graph.get(0).get(0).setBestPenalizedCost(0);
 
         for (int j = 0; j < voyageWithDepot.size() - 1; j++ ) {
 

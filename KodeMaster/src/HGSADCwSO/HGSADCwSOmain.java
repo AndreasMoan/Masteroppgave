@@ -16,6 +16,7 @@ public class HGSADCwSOmain {
     private Process process;
 
     private double bestCost = Double.POSITIVE_INFINITY;
+    private double scheduleCost = Double.POSITIVE_INFINITY;
 
     private String[] args;
 
@@ -60,7 +61,7 @@ public class HGSADCwSOmain {
     }
 
     private void createInitialPopulation() {
-        int initialPopulationSize = 100; //TODO
+        int initialPopulationSize = problemData.getHeuristicParameterInt("Population size");
         for (int i = 0; i < initialPopulationSize; i++){
             Individual kid = process.createIndividual();
             process.educate(kid);
@@ -75,7 +76,7 @@ public class HGSADCwSOmain {
     private void runEvolutionaryLoop() {
         process.recordRunStatistics(0, feasiblePopulation, infeasiblePopulation, bestFeasibleIndividual);
         while (!stoppingCriterion()) {
-            System.out.println("Iteration " + iteration + "                                                          Best cost thus far: " + bestCost);
+            // System.out.println("Iteration " + iteration + "                 Best cost thus far: " + bestCost);
             evolve();
             process.recordRunStatistics(iteration, feasiblePopulation, infeasiblePopulation, bestFeasibleIndividual);
             iteration++;
@@ -94,24 +95,29 @@ public class HGSADCwSOmain {
         boolean isImprovingSolution = addToSubpopulation(kid);
         if (kid.getPenalizedCost() < bestCost) {
             bestCost = kid.getPenalizedCost();
+            scheduleCost = kid.getScheduleCost();
         }
+        System.out.println("Iteration " + iteration + ", Schedule cost: " + scheduleCost + ",  Best cost thus far: " + bestCost + ",      Cost this iteration: " + kid.getPenalizedCost() + ",      Chromosome: " + kid.getVesselTourChromosome());
         process.updateIterationsSinceImprovementCounter(isImprovingSolution);
         process.adjustPenaltyParameters(feasiblePopulation, infeasiblePopulation);
-        /*
+
         if (process.isDiversifyIteration()) {
             diversify(feasiblePopulation, infeasiblePopulation);
         }
-         */
     }
 
     private void diversify(ArrayList<Individual> feasiblePopulation, ArrayList<Individual> infeasiblePopulation) {
 
         System.out.println("Diversifying...");
 
-        genocide(feasiblePopulation, infeasiblePopulation, .0/3.0);
+        genocide(feasiblePopulation, infeasiblePopulation, 2.0/3.0);
         genocide(infeasiblePopulation, feasiblePopulation,  2.0/3.0);
 
         System.out.println("Breeding new population...");
+
+        createInitialPopulation();
+
+        process.recordDiversification(iteration);
     }
 
     private void genocide(ArrayList<Individual> subpopulation, ArrayList<Individual> otherSubpopulation, double proportionToKill){
@@ -125,16 +131,19 @@ public class HGSADCwSOmain {
     public boolean addToSubpopulation(Individual kid) {
         boolean isImprovingSolution = false;
         process.evaluate(kid);
-        System.out.println(kid.getGenotype().getVesselTourChromosome());
 
         if (kid.isFeasible()) {
-            if ((bestFeasibleIndividual == null) || (kid.getPenalizedCost() < bestFeasibleIndividual.getPenalizedCost())) { //TODO change to penalized cost
+            if ((bestFeasibleIndividual == null) || (kid.getPenalizedCost() < bestFeasibleIndividual.getPenalizedCost())) {
                 bestFeasibleIndividual = kid;
                 isImprovingSolution = true;
             }
             feasiblePopulation.add(kid);
         }
         else {
+            if ((bestFeasibleIndividual == null) || (kid.getPenalizedCost() < bestFeasibleIndividual.getPenalizedCost())) {
+                bestFeasibleIndividual = kid;
+                isImprovingSolution = true;
+            }
             infeasiblePopulation.add(kid);
         }
         process.addDiversityDistance(kid);

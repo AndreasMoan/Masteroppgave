@@ -122,10 +122,10 @@ public class Utilities {
             @Override
             public int compare(Order order1, Order order2) {
                 if (order1.getDeadline() > order2.getDeadline()){
-                    return  1;
+                    return  -1;
                 }
                 else if (order1.getDeadline() < order2.getDeadline()) {
-                    return  -1;
+                    return  1;
                 }
                 else {
                     return 0;

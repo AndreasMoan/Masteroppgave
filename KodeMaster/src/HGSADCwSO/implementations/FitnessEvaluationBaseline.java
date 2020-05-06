@@ -134,6 +134,7 @@ public class FitnessEvaluationBaseline implements FitnessEvaluationProtocol {
                     }
                     else if (index >= chromosome2.get(vessel).size()) {
                         voyageDifference += chromosome1.get(vessel).size() - chromosome2.get(vessel).size();
+                        break;
                     }
                 }
                 else {

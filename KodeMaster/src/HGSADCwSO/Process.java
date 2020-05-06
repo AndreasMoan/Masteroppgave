@@ -200,4 +200,10 @@ public class Process {
     public void updateIterationsSinceImprovementCounter(boolean improvingSolutionFound) {
         diversificationProtocol.updateIterationsSinceImprovementCounter(improvingSolutionFound);
     }
+
+    public void recordDiversification(int iteration) {
+        diversificationProtocol.addDiversification(iteration);
+        diversificationProtocol.resetDiversificationCounter();
+    }
+
 }
