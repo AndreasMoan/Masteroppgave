@@ -38,15 +38,16 @@ public class HackInitProblemData {
         heuristicInstanceParameters.put("Number of offspring in a generation","75");
         heuristicInstanceParameters.put("Target feasible proportion","0,5");
         heuristicInstanceParameters.put("Proportion of elite individuals", "0,4");
+        heuristicInstanceParameters.put("Number of elite individuals", "40");
 
         // Chances
 
-        heuristicInstanceParameters.put("Education rate", "0.3");
+        heuristicInstanceParameters.put("Education rate", "0.8");
         heuristicInstanceParameters.put("Repair rate", "0.8");
 
         // Discretization:
 
-        heuristicInstanceParameters.put("Number of time periods per hour", "10");
+        heuristicInstanceParameters.put("Number of time periods per hour", "6");
 
         // Penalty costs
 
@@ -67,8 +68,8 @@ public class HackInitProblemData {
         heuristicInstanceParameters.put("Granularity threshold in RI", "0,2"); //share of neighbourhood
 
         //Cache
-        heuristicInstanceParameters.put("Max cached tours per vessel", "500");
-        heuristicInstanceParameters.put("Max cached graphs", "2000");
+        heuristicInstanceParameters.put("Max cached tours per vessel", "1000");
+        heuristicInstanceParameters.put("Max cached graphs", "5000");
 
 
 

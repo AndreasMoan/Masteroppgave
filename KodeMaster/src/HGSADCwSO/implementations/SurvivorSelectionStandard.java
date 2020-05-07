@@ -24,8 +24,9 @@ public class SurvivorSelectionStandard implements SurvivorSelectionProtocol {
         int populationSize = problemData.getHeuristicParameterInt("Population size");
         ArrayList<Individual> clones = getClones(subpopulation, fitnessEvaluationProtocol);
         //sorts the clones and the subpopulation so that the individuals with the highest biased fitness are first
-        Collections.sort(clones, Collections.reverseOrder(Utilities.getBiasedFitnessComparator()));
-        Collections.sort(subpopulation, Collections.reverseOrder(Utilities.getBiasedFitnessComparator()));
+        Collections.sort(clones, Utilities.getBiasedFitnessComparator());
+        Collections.sort(subpopulation, Utilities.getBiasedFitnessComparator());
+
         while (subpopulation.size() > populationSize) {
             if (clones.size() > 0) {
                 HGSADCwSOmain.removeFromSubpopulation(subpopulation, clones.remove(0), otherSubpopulation, fitnessEvaluationProtocol, true);
@@ -33,8 +34,8 @@ public class SurvivorSelectionStandard implements SurvivorSelectionProtocol {
             else {
                 HGSADCwSOmain.removeFromSubpopulation(subpopulation, subpopulation.get(0), otherSubpopulation , fitnessEvaluationProtocol, true);
             }
-            Collections.sort(clones, Collections.reverseOrder(Utilities.getBiasedFitnessComparator()));
-            Collections.sort(subpopulation, Collections.reverseOrder(Utilities.getBiasedFitnessComparator()));
+            Collections.sort(clones, Utilities.getBiasedFitnessComparator());
+            Collections.sort(subpopulation, Utilities.getBiasedFitnessComparator());
         }
     }
 
