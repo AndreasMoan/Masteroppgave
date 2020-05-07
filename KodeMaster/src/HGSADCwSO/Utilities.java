@@ -65,7 +65,7 @@ public class Utilities {
         return allElements;
     }
 
-    public static Comparator<Individual> getFitnessComparator() {
+    /*public static Comparator<Individual> getFitnessComparator() { //sorts in descending order
         return new Comparator<Individual>() {
             @Override
             public int compare(Individual individual1, Individual individual2) {
@@ -80,7 +80,7 @@ public class Utilities {
                 }
             }
         };
-    }
+    }*/
 
 
 
@@ -135,13 +135,13 @@ public class Utilities {
         };
     }
 
-    public static Comparator<Individual> getBiasedFitnessComparator() {
+    public static Comparator<Individual> getBiasedFitnessComparator() { //sorts in ascending order
         return new Comparator<Individual>() {
             public int compare(Individual ind1, Individual ind2) {
-                if (ind1.getPenalizedCost() < ind2.getPenalizedCost()) {
+                if (ind1.getBiasedFitness() < ind2.getBiasedFitness()) {
                     return -1;
                 }
-                else if (ind1.getPenalizedCost() > ind2.getPenalizedCost()) {
+                else if (ind1.getBiasedFitness() > ind2.getBiasedFitness()) {
                     return 1;
                 }
                 else {
@@ -167,7 +167,7 @@ public class Utilities {
         };
     }
 
-    public static Comparator<Individual> getDiversityContributionComparator() {
+    public static Comparator<Individual> getDiversityContributionComparator() { //sorts in descending order
         return new Comparator<Individual>() {
             public int compare(Individual ind1, Individual ind2) {
                 if (ind1.getDiversityContribution() < ind2.getDiversityContribution()) {
