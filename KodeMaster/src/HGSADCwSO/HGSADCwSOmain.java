@@ -6,6 +6,7 @@ import HGSADCwSO.protocols.FitnessEvaluationProtocol;
 import javax.sound.midi.Soundbank;
 import java.sql.SQLOutput;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class HGSADCwSOmain {
 
@@ -122,7 +123,15 @@ public class HGSADCwSOmain {
     }
 
     private void genocide(ArrayList<Individual> subpopulation, ArrayList<Individual> otherSubpopulation, double proportionToKill){
-        subpopulation.sort(Utilities.getFitnessComparator());
+
+        Collections.sort(subpopulation, Collections.reverseOrder(Utilities.getBiasedFitnessComparator()));
+
+
+        /*for (Individual ind : subpopulation) {
+            System.out.println(ind.getBiasedFitness() + ", with penalized cost: " + ind.getPenalizedCost());
+        }*/
+
+
         int numberOfIndividualsToKill = (int) Math.round(subpopulation.size()*proportionToKill);
         ArrayList<Individual> individualsToBeKilled = new ArrayList<>(subpopulation.subList(0,numberOfIndividualsToKill));
         removeFromSubpopulation(subpopulation, otherSubpopulation, individualsToBeKilled);

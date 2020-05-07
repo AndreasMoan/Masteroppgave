@@ -191,9 +191,6 @@ public class FitnessEvaluationBaseline implements FitnessEvaluationProtocol {
         return 0;
     }
 
-    public double getNumberOfInstallationsPenalty() {
-        return 0;
-    }
 
     public double getDeadlineViolationPenalty() {
         return 0;
@@ -204,10 +201,6 @@ public class FitnessEvaluationBaseline implements FitnessEvaluationProtocol {
     }
 
     public void setCapacityViolationPenalty(double capacityViolationPenalty) { //TODO
-
-    }
-
-    public void setNumberOfInstallationsViolationPenalty(double numberOfInstallationsViolationPenalty) {
 
     }
 

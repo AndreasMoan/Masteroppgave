@@ -125,7 +125,7 @@ public class Process {
     private void selectEducationProtocol(){
         switch (problemData.getHeuristicParameters().get("Education protocol")) {
             case "cost":
-                educationProtocol = new EducationStandard(problemData, new FitnessEvaluationHeuristic(problemData), penaltyAdjustmentProtocol);
+                educationProtocol = new EducationStandard(problemData, /*new FitnessEvaluationHeuristic(problemData)*/ fitnessEvaluationProtocol, penaltyAdjustmentProtocol);
                 break;
             default:
                 educationProtocol = null;
