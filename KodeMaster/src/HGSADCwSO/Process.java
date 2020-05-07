@@ -75,6 +75,20 @@ public class Process {
         }
     }
 
+    public void mutate(Individual individual) {
+        educationProtocol.interVoyageMutation(individual);
+    }
+
+    public Individual cloneGoodIndividual(ArrayList<Individual> feasiblePopulation, ArrayList<Individual> infeasiblePopulation) {
+        ArrayList<Individual> parents = selectParents(feasiblePopulation, infeasiblePopulation);
+        if (parents.get(0).getPenalizedCost() < parents.get(1).getPenalizedCost()) {
+            return new Individual(Utilities.deepCopyVesselTour(parents.get(0).getVesselTourChromosome()),fitnessEvaluationProtocol);
+        }
+        else {
+            return new Individual(Utilities.deepCopyVesselTour(parents.get(1).getVesselTourChromosome()),fitnessEvaluationProtocol);
+        }
+    }
+
 
 
     private void selectProtocols() {

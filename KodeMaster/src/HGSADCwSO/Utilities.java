@@ -1,5 +1,6 @@
 package HGSADCwSO;
 
+import java.io.CharArrayReader;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
@@ -117,7 +118,7 @@ public class Utilities {
         return vesselTourCopy;
     }
 
-    public static Comparator<Order> getDeadlineComparator() { //testet! Den gir tidligste deadline først
+    public static Comparator<Order> getDeadlineComparator() { //testet! Den gir tidligste deadline sist OBS!!! SNUDDD
         return new Comparator<Order>() {
             @Override
             public int compare(Order order1, Order order2) {
@@ -178,6 +179,38 @@ public class Utilities {
                 return 0;
             }
         };
+    }
+
+    public static ArrayList<Double> normalize(ArrayList<Double> array) {
+
+        double sum = 0;
+
+        for (double value : array) {
+            sum += value;
+        }
+
+        ArrayList<Double> normalized_array = new ArrayList<>();
+
+        for (int i = 0; i < array.size(); i++) {
+            double prob = array.get(i)/sum;
+            normalized_array.add(prob);
+        }
+
+        return normalized_array;
+    }
+
+    public static int getRandomElementFromDistribution(ArrayList<Double> probabilities) {
+
+        double random_var = new Random().nextDouble();
+
+        for (int i = 0; i < probabilities.size(); i++) {
+            random_var -= probabilities.get(i);
+            if (random_var <= 0) {
+                return i;
+            }
+        }
+
+        return probabilities.size() -1;
     }
 
 

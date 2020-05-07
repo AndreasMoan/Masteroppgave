@@ -41,12 +41,12 @@ public class HackInitProblemData {
 
         // Chances
 
-        heuristicInstanceParameters.put("Education rate", "0.3");
+        heuristicInstanceParameters.put("Education rate", "0.4");
         heuristicInstanceParameters.put("Repair rate", "0.8");
 
         // Discretization:
 
-        heuristicInstanceParameters.put("Number of time periods per hour", "10");
+        heuristicInstanceParameters.put("Number of time periods per hour", "6");
 
         // Penalty costs
 
@@ -69,6 +69,9 @@ public class HackInitProblemData {
         //Cache
         heuristicInstanceParameters.put("Max cached tours per vessel", "500");
         heuristicInstanceParameters.put("Max cached graphs", "2000");
+
+        //Mutation
+        heuristicInstanceParameters.put("Mutation chance","0.4");
 
 
 
