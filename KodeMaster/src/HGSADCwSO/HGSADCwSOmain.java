@@ -6,6 +6,7 @@ import HGSADCwSO.protocols.FitnessEvaluationProtocol;
 import javax.sound.midi.Soundbank;
 import java.sql.SQLOutput;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Collections;
 
 public class HGSADCwSOmain {
@@ -15,6 +16,7 @@ public class HGSADCwSOmain {
     private long startTime, stopTime;
     private ProblemData problemData;
     private Process process;
+    private double mutationChance;
 
     private double bestCost = Double.POSITIVE_INFINITY;
     private double scheduleCost = Double.POSITIVE_INFINITY;
@@ -49,6 +51,8 @@ public class HGSADCwSOmain {
         feasiblePopulation = new ArrayList<Individual>();
         infeasiblePopulation = new ArrayList<Individual>();
         bestFeasibleIndividual = null;
+
+        mutationChance = problemData.getHeuristicParameterDouble("Mutation chance");
 
         iteration = 1;
         problemData.printProblemData(); //TODO
@@ -88,9 +92,27 @@ public class HGSADCwSOmain {
         return process.isStoppingIteration();
     }
 
+    private Individual getNextIndividual() {
+
+        Individual kid;
+
+        if (new Random().nextDouble() < mutationChance) {
+            kid = process.cloneGoodIndividual(feasiblePopulation,infeasiblePopulation);
+            process.mutate(kid);
+            process.mutate(kid);
+            process.mutate(kid);
+        }
+        else {
+            ArrayList<Individual> parents = process.selectParents(feasiblePopulation, infeasiblePopulation);
+            kid = process.mate(parents);
+        }
+        return kid;
+    }
+
     private void evolve() {
-        ArrayList<Individual> parents = process.selectParents(feasiblePopulation, infeasiblePopulation);
-        Individual kid = process.mate(parents);
+
+        Individual kid = getNextIndividual();
+
         process.educate(kid);
         process.repair(kid);
         boolean isImprovingSolution = addToSubpopulation(kid);

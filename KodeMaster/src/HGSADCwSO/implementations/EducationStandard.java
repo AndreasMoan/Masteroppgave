@@ -5,6 +5,7 @@ import HGSADCwSO.protocols.EducationProtocol;
 import HGSADCwSO.protocols.FitnessEvaluationProtocol;
 import javafx.util.Pair;
 
+import javax.rmi.CORBA.Util;
 import java.io.LineNumberReader;
 import java.lang.reflect.Array;
 import java.util.*;
@@ -35,14 +36,11 @@ public class EducationStandard implements EducationProtocol {
         //if (randomNumber > problemData.getHeuristicParameterDouble("Education rate")) {
         //Education:
         fitnessEvaluationProtocol.evaluate(individual); //make sure costs are up to date before education. //TODO Fix potential bug
-        neighbourhoodSearch(individual);
-        System.out.println("Counter 1 : " + counter);
+        // neighbourhoodSearch(individual);
         mergeVoyages(individual);
-        System.out.println("Counter 2 : " + counter);
         voyageReduction(individual);
-        System.out.println("Counter 3 : " + counter);
         neighbourhoodSearch(individual);
-        System.out.println("Counter 4 : " + counter);
+        interVoyageMutation(individual);
 
         counter = 0;
         //}
@@ -158,6 +156,109 @@ public class EducationStandard implements EducationProtocol {
             neighbours.remove(distancesByOrderNumber.remove(0).getKey());
         }
         return neighbours;
+    }
+
+    public void interVoyageMutation(Individual individual){
+
+        // System.out.println("Before: " + individual.getVesselTourChromosome());
+        
+        double penalized_cost_to_beat = individual.getPenalizedCost();
+        
+        HashMap<Integer, ArrayList<Integer>> chromosome = Utilities.deepCopyVesselTour(individual.getVesselTourChromosome());
+
+        // double costUnchangedChromosme = fitnessEvaluationProtocol.getPenalizedCostOfVoyage();
+
+        for (int vesselNumber = 0; vesselNumber < chromosome.size(); vesselNumber++) {
+
+            ArrayList<Integer> unchanged_voyage = new ArrayList<>(chromosome.get(vesselNumber));
+            ArrayList<Double> remove_cost_reductions = new ArrayList<>();
+
+            if (unchanged_voyage.size() == 0) {
+                continue;
+            }
+
+            double cost_of_unchanged_voyage = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(unchanged_voyage, vesselNumber);
+            double lowest_cost_reduction = Double.POSITIVE_INFINITY;
+
+            for (int index = 0; index < unchanged_voyage.size(); index ++) {
+
+                ArrayList<Integer> reduced_voyage = new ArrayList<>(unchanged_voyage);
+                reduced_voyage.remove(index);
+
+                double cost_reduction = cost_of_unchanged_voyage - fitnessEvaluationProtocol.getPenalizedCostOfVoyage(reduced_voyage, vesselNumber);
+                remove_cost_reductions.add(cost_reduction);
+
+                if (cost_reduction < lowest_cost_reduction) {
+                    lowest_cost_reduction = cost_reduction;
+                }
+            }
+
+            for (int i = 0; i < remove_cost_reductions.size(); i++){
+                remove_cost_reductions.set(i, remove_cost_reductions.get(i) - lowest_cost_reduction);
+            }
+
+            ArrayList<Double> probabilities = Utilities.normalize(remove_cost_reductions);
+
+            int remove_index = Utilities.getRandomElementFromDistribution(probabilities);
+            int order_to_move = unchanged_voyage.get(remove_index);
+
+            ArrayList<Integer> reduced_voyage = new ArrayList<>(chromosome.get(vesselNumber));
+            reduced_voyage.remove(remove_index);
+
+            double reduced_cost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(reduced_voyage, vesselNumber) - cost_of_unchanged_voyage;
+            
+            ArrayList<Double> cost_reductions_from_move = new ArrayList<>();
+            ArrayList<Integer> move_index = new ArrayList<>();
+            ArrayList<Integer> move_vessel = new ArrayList<>();
+
+            boolean found_reduction = false;
+            
+            for (int second_vessel_number = 0; second_vessel_number < chromosome.size() && second_vessel_number != vesselNumber; second_vessel_number++) {
+
+                ArrayList<Integer> second_unchanged_voyage = new ArrayList<>(chromosome.get(second_vessel_number));
+
+                if (second_unchanged_voyage.size() == 0){
+                    continue;
+                }
+                
+                for (int i = 0; i <= second_unchanged_voyage.size(); i++) {
+
+                    ArrayList<Integer> extended_voyage = new ArrayList<>(second_unchanged_voyage);
+                    extended_voyage.add(i, order_to_move);
+                    
+                    double added_cost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(extended_voyage, second_vessel_number);
+                    
+                    double cost_reduction = Math.max(0, penalized_cost_to_beat - reduced_cost + added_cost);
+
+                    if (cost_reduction > 0) {
+                        found_reduction = true;
+                    }
+                    
+                    cost_reductions_from_move.add(cost_reduction);
+                    move_index.add(i);
+                    move_vessel.add(second_vessel_number);
+                }
+            }
+
+            if (found_reduction) {
+                ArrayList<Double> second_probabilities = Utilities.normalize(cost_reductions_from_move);
+                int chosen_move_index = Utilities.getRandomElementFromDistribution(second_probabilities);
+
+                ArrayList<Integer> extended_voyage = new ArrayList<>(chromosome.get(move_vessel.get(chosen_move_index)));
+                extended_voyage.add(move_index.get(chosen_move_index), order_to_move);
+
+                HashMap<Integer, ArrayList<Integer>> new_chromosome = Utilities.deepCopyVesselTour(individual.getVesselTourChromosome());
+
+
+                //System.out.println("Moving...");
+                chromosome.put(vesselNumber, reduced_voyage);
+                chromosome.put(move_vessel.get(chosen_move_index), extended_voyage);
+            }
+        }
+
+        individual.setVesselTourChromosome(chromosome);
+        //System.out.println("After: " + individual.getVesselTourChromosome());
+
     }
 
 

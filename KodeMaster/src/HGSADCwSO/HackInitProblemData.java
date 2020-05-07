@@ -71,6 +71,9 @@ public class HackInitProblemData {
         heuristicInstanceParameters.put("Max cached tours per vessel", "1000");
         heuristicInstanceParameters.put("Max cached graphs", "5000");
 
+        //Mutation
+        heuristicInstanceParameters.put("Mutation chance","0.4");
+
 
 
         ArrayList<Vessel> vessels = new ArrayList<Vessel>();

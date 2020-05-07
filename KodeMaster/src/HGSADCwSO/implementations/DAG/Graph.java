@@ -118,7 +118,7 @@ public class Graph {
 
             // System.out.println("Edge creation iteration, ");
 
-            finServicingTime = getEarliestFeasibleSercivingFinishingTime(finServicingTime , destinationOrderNumber);
+            finServicingTime = getEarliestFeasibleSercivingFinishingTime(finServicingTime , destinationOrderNumber, 0);
 
             // System.out.println("Fin servicing time: " + finServicingTime);
 
@@ -208,10 +208,11 @@ public class Graph {
         return true;
     }
 
-    private int getEarliestFeasibleSercivingFinishingTime(int finServicingTime, int destinationOrderNumber) {
+    private int getEarliestFeasibleSercivingFinishingTime(int finServicingTime, int destinationOrderNumber, int nIterationsIn) {
+
         int earliestFeasibleSercivingFinishingTime = finServicingTime;
         if (!isServicePossible(finServicingTime, destinationOrderNumber)) {
-            earliestFeasibleSercivingFinishingTime = getEarliestFeasibleSercivingFinishingTime(finServicingTime +1, destinationOrderNumber);
+            earliestFeasibleSercivingFinishingTime = getEarliestFeasibleSercivingFinishingTime(finServicingTime +1, destinationOrderNumber, nIterationsIn +1);
         }
         return earliestFeasibleSercivingFinishingTime;
     } //TODO fix bug: How do we deal with long periods of bad weather? How long waiting do we accept?
