@@ -42,25 +42,25 @@ public class HackInitProblemData {
 
         // Chances
 
-        heuristicInstanceParameters.put("Education rate", "0.8");
-        heuristicInstanceParameters.put("Repair rate", "0.8");
+        heuristicInstanceParameters.put("Education rate", "0,6");
+        heuristicInstanceParameters.put("Repair rate", "0,8");
 
         // Discretization:
 
-        heuristicInstanceParameters.put("Number of time periods per hour", "6");
+        heuristicInstanceParameters.put("Number of time periods per hour", "4");
 
         // Penalty costs
 
         heuristicInstanceParameters.put("Factor to increase penalties with", "1,2");
         heuristicInstanceParameters.put("Factor to decrease penalties with", "0,85");
 
-        heuristicInstanceParameters.put("Capacity constraint violation penalty", "1000"); //TODO - sett en god verdi
+        heuristicInstanceParameters.put("Capacity constraint violation penalty", "5000"); //TODO - sett en god verdi
         heuristicInstanceParameters.put("Duration constraint violation penalty", "500"); //TODO - sett en god verdi
         heuristicInstanceParameters.put("Deadline constraint violation penalty", "200");
 
         // Stopping and diversification
 
-        heuristicInstanceParameters.put("Iterations before diversify","300");
+        heuristicInstanceParameters.put("Iterations before diversify","500");
         heuristicInstanceParameters.put("Iterations before stopping","10000");
 
         // Neighbourhood
@@ -68,11 +68,11 @@ public class HackInitProblemData {
         heuristicInstanceParameters.put("Granularity threshold in RI", "0,2"); //share of neighbourhood
 
         //Cache
-        heuristicInstanceParameters.put("Max cached tours per vessel", "1000");
-        heuristicInstanceParameters.put("Max cached graphs", "5000");
+        heuristicInstanceParameters.put("Max cached tours per vessel", "5000");
+        heuristicInstanceParameters.put("Max cached graphs", "2000");
 
         //Mutation
-        heuristicInstanceParameters.put("Mutation chance","0.4");
+        heuristicInstanceParameters.put("Mutation chance","0,0");
 
 
 

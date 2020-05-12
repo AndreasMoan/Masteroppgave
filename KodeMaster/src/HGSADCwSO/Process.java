@@ -15,7 +15,10 @@ public class Process {
     private InitialPopulationProtocol initialPopulationProtocol;
     private ParentSelectionProtocol parentSelectionProtocol;
     private EducationProtocol educationProtocol;
+
     private FitnessEvaluationProtocol fitnessEvaluationProtocol;
+    private FitnessEvaluationProtocol heuristicFitnessEvaluationProtocol;
+
     private ReproductionProtocol reproductionProtocol;
     private PenaltyAdjustmentProtocol penaltyAdjustmentProtocol;
     private DiversificationProtocol diversificationProtocol;
@@ -89,6 +92,10 @@ public class Process {
         }
     }
 
+    public void survivorSelection(ArrayList<Individual> subpopulation, ArrayList<Individual> otherSubpopulation) {
+        survivorSelectionProtocol.selectSurvivors(subpopulation, otherSubpopulation, fitnessEvaluationProtocol);
+    }
+
 
 
     private void selectProtocols() {
@@ -139,7 +146,7 @@ public class Process {
     private void selectEducationProtocol(){
         switch (problemData.getHeuristicParameters().get("Education protocol")) {
             case "cost":
-                educationProtocol = new EducationStandard(problemData, /*new FitnessEvaluationHeuristic(problemData)*/ fitnessEvaluationProtocol, penaltyAdjustmentProtocol);
+                educationProtocol = new EducationStandard(problemData, heuristicFitnessEvaluationProtocol, penaltyAdjustmentProtocol);
                 break;
             default:
                 educationProtocol = null;
@@ -151,12 +158,15 @@ public class Process {
         switch (problemData.getHeuristicParameters().get("Fitness evaluation protocol")) {
             case "heuristic":
                 fitnessEvaluationProtocol = new FitnessEvaluationHeuristic(problemData);
+                heuristicFitnessEvaluationProtocol = new FitnessEvaluationHeuristic(problemData);
                 break;
             case "dag":
                 fitnessEvaluationProtocol = new FitnessEvaluationDAG(problemData);
+                heuristicFitnessEvaluationProtocol = new FitnessEvaluationHeuristic(problemData);
                 break;
             default:
                 fitnessEvaluationProtocol = null;
+                heuristicFitnessEvaluationProtocol = null;
                 break;
         }
     }
@@ -175,6 +185,7 @@ public class Process {
     public void adjustPenaltyParameters(ArrayList<Individual> feasiblePopulation, ArrayList<Individual> infeasiblePopulation) {
         ArrayList<Individual> entirePopulation = Utilities.getAllElements(feasiblePopulation, infeasiblePopulation);
         penaltyAdjustmentProtocol.adjustPenalties(entirePopulation, fitnessEvaluationProtocol);
+        penaltyAdjustmentProtocol.adjustPenalties(entirePopulation, heuristicFitnessEvaluationProtocol);
     }
 
     public boolean isDiversifyIteration() {

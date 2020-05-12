@@ -3,8 +3,6 @@ package HGSADCwSO;
 
 import HGSADCwSO.protocols.FitnessEvaluationProtocol;
 
-import javax.sound.midi.Soundbank;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Collections;
@@ -116,12 +114,13 @@ public class HGSADCwSOmain {
         process.educate(kid);
         process.repair(kid);
         boolean isImprovingSolution = addToSubpopulation(kid);
+        System.out.println("FSP size: " + feasiblePopulation.size() + " IFSP size: " + infeasiblePopulation.size());
         if (kid.getPenalizedCost() < bestCost) {
             bestCost = kid.getPenalizedCost();
             scheduleCost = kid.getScheduleCost();
         }
         System.out.println();
-        System.out.println("Iteration " + iteration + ", Schedule cost: " + scheduleCost + ",  Best cost thus far: " + bestCost + ",      Cost this iteration: " + kid.getPenalizedCost() + ",      Chromosome: " + kid.getVesselTourChromosome());
+        System.out.println("Iteration " + iteration + ", Schedule cost: " + scheduleCost + ",  Best cost thus far: " + bestCost + ",      Chromosome: " + kid.getVesselTourChromosome());
         process.updateIterationsSinceImprovementCounter(isImprovingSolution);
         process.adjustPenaltyParameters(feasiblePopulation, infeasiblePopulation);
 
@@ -195,9 +194,8 @@ public class HGSADCwSOmain {
         int maxPopulationSize = problemData.getHeuristicParameterInt("Population size")
                 + problemData.getHeuristicParameterInt("Number of offspring in a generation");
 
-        if (subpopulation.size() + otherSubpopulation.size() >= maxPopulationSize) {
-            genocide(subpopulation, otherSubpopulation, 3.0/4.0);
-            genocide(otherSubpopulation, subpopulation, 3.0/4.0);
+        if (subpopulation.size() >= maxPopulationSize) {
+            process.survivorSelection(subpopulation, otherSubpopulation);
         }
     }
 

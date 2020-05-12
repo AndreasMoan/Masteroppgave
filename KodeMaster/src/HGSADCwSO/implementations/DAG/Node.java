@@ -15,6 +15,7 @@ public class Node {
 
     private double bestTotalDeadlineViolation;
     private double deadlineViolation;
+    private double durationViolation;
 
     private boolean feasibility;
 
@@ -26,6 +27,14 @@ public class Node {
         this.parentEdges = new ArrayList<Edge>();
         this.setBestCost(Double.POSITIVE_INFINITY);
         this.setBestPenalizedCost(Double.POSITIVE_INFINITY);
+    }
+
+    public void setDurationViolation(double durationViolation) {
+        this.durationViolation = durationViolation;
+    }
+
+    public double getDurationViolation() {
+        return durationViolation;
     }
 
     public void setFeasibility(boolean feasibility) {

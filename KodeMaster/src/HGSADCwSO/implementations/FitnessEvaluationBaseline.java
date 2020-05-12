@@ -15,9 +15,11 @@ public class FitnessEvaluationBaseline implements FitnessEvaluationProtocol {
     private double nCloseProp;
     protected double nEliteProp;
     private double numberOfOrders;
-    private double durationViolationPenalty;
-    private double capacityViolationPenalty;
-    private double deadlineViolationPenalty;
+
+    protected double durationViolationPenalty;
+    protected double capacityViolationPenalty;
+    protected double deadlineViolationPenalty;
+
     private HashMap<Individual, HashMap<Individual, Double>> hammingDistances;
 
     public FitnessEvaluationBaseline(ProblemData problemData){
@@ -184,28 +186,27 @@ public class FitnessEvaluationBaseline implements FitnessEvaluationProtocol {
     }
 
     public double getDurationViolationPenalty() {
-        return 0;
+        return durationViolationPenalty;
     }
 
     public double getCapacityViolationPenalty() {
-        return 0;
+        return capacityViolationPenalty;
     }
-
 
     public double getDeadlineViolationPenalty() {
-        return 0;
+        return deadlineViolationPenalty;
     }
 
-    public void setDurationViolationPenalty(double durationViolationPenalty) { //TODO
-
+    public void setDurationViolationPenalty(double durationViolationPenalty) {
+        this.durationViolationPenalty = durationViolationPenalty;
     }
 
     public void setCapacityViolationPenalty(double capacityViolationPenalty) { //TODO
-
+        this.capacityViolationPenalty = capacityViolationPenalty;
     }
 
     public void setDeadlineViolationPenalty(double deadlineViolationPenalty) { //TODO
-
+        this.deadlineViolationPenalty = deadlineViolationPenalty;
     }
 
     public void setPenalizedCostPopulation(ArrayList<Individual> population) { //TODO

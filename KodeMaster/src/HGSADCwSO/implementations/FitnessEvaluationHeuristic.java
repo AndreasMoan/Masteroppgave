@@ -4,6 +4,7 @@ import HGSADCwSO.*;
 import HGSADCwSO.protocols.FitnessEvaluationProtocol;
 import HGSADCwSO.protocols.SailingLegCalculationsProtocol;
 
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -21,10 +22,11 @@ public class FitnessEvaluationHeuristic extends FitnessEvaluationBaseline {
 
     public void evaluate(Individual individual) {
 
-        double devp = problemData.getHeuristicParameterDouble("Deadline constraint violation penalty");
-        double duvp = problemData.getHeuristicParameterDouble("Duration constraint violation penalty");
-        double cvp = problemData.getHeuristicParameterDouble("Capacity constraint violation penalty");
-        evaluate(individual, devp, cvp, duvp);
+        double deadline_violation_penalty = super.deadlineViolationPenalty;
+        double duration_violation_penalty = super.durationViolationPenalty;
+        double capacity_violation_penalty = super.capacityViolationPenalty;
+
+        evaluate(individual, duration_violation_penalty, capacity_violation_penalty, deadline_violation_penalty);
     }
 
     public void evaluate(Individual individual, double durationViolationPenalty, double capacityViolationPenalty, double deadlineViolationPenalty) {
@@ -84,22 +86,24 @@ public class FitnessEvaluationHeuristic extends FitnessEvaluationBaseline {
         double timeSpent = 0;
         double totalDeadlineViolatin = 0;
 
-        for (int i : route){
-            destinationInstallation = problemData.getOrdersByNumber().get(i).getInstallation();
+        for (int i = 0; i < route.size(); i++){
+            int orderNumber = route.get(i);
+            destinationInstallation = problemData.getOrdersByNumber().get(orderNumber).getInstallation();
             int weatherState = problemData.getWeatherStateByHour().get((int)timeSpent);
             double distance = problemData.getDistance(departureInstallation, destinationInstallation);
 
-            sailingLegCalculationsProtocol.calculateSailingLeg(distance, sailingSpeed, timeSpent, problemData.getOrdersByNumber().get(i).getDemand());
+            sailingLegCalculationsProtocol.calculateSailingLeg(distance, sailingSpeed, timeSpent, problemData.getOrdersByNumber().get(orderNumber).getDemand());
 
             timeSpent = sailingLegCalculationsProtocol.getArrivalTime();
             totalConsumption += sailingLegCalculationsProtocol.getFuelConsumption();
 
-            totalDeadlineViolatin += Math.max(0, timeSpent - problemData.getOrdersByNumber().get(i).getDemand());
+            totalDeadlineViolatin += Math.max(0, timeSpent - problemData.getOrdersByNumber().get(orderNumber).getDeadline()*24);
 
             departureInstallation = destinationInstallation;
         }
 
         double capacityViolation = Math.max(0, totalCapReq - vessel.getCapacity());
+
         double durationViolation = Math.max(0, timeSpent - vessel.getReturnDay()*24);
 
         return new double[] {fuelPrice*totalConsumption, capacityViolation, totalDeadlineViolatin, durationViolation};

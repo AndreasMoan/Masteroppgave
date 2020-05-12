@@ -21,21 +21,38 @@ public class SurvivorSelectionStandard implements SurvivorSelectionProtocol {
 
 
     public void selectSurvivors(ArrayList<Individual> subpopulation, ArrayList<Individual> otherSubpopulation, FitnessEvaluationProtocol fitnessEvaluationProtocol) {
+
         int populationSize = problemData.getHeuristicParameterInt("Population size");
         ArrayList<Individual> clones = getClones(subpopulation, fitnessEvaluationProtocol);
         //sorts the clones and the subpopulation so that the individuals with the highest biased fitness are first
-        Collections.sort(clones, Utilities.getBiasedFitnessComparator());
-        Collections.sort(subpopulation, Utilities.getBiasedFitnessComparator());
+        Collections.sort(clones,  Collections.reverseOrder(Utilities.getBiasedFitnessComparator()));
+        Collections.sort(subpopulation,  Collections.reverseOrder(Utilities.getBiasedFitnessComparator()));
+
+        for (Individual individual : subpopulation) {
+            System.out.println("Individual PC: " + individual.getPenalizedCost());
+
+        }
+
+        // Collections.sort(subpopulation, Collections.reverseOrder(Utilities.getPenalizedCostComparator()));
 
         while (subpopulation.size() > populationSize) {
             if (clones.size() > 0) {
+                System.out.println("Removing clone:  " + clones.get(0).getPenalizedCost());
                 HGSADCwSOmain.removeFromSubpopulation(subpopulation, clones.remove(0), otherSubpopulation, fitnessEvaluationProtocol, true);
             }
             else {
+                System.out.println("Removing         " + subpopulation.get(0).getPenalizedCost());
                 HGSADCwSOmain.removeFromSubpopulation(subpopulation, subpopulation.get(0), otherSubpopulation , fitnessEvaluationProtocol, true);
             }
-            Collections.sort(clones, Utilities.getBiasedFitnessComparator());
-            Collections.sort(subpopulation, Utilities.getBiasedFitnessComparator());
+            Collections.sort(clones,  Collections.reverseOrder(Utilities.getBiasedFitnessComparator()));
+            Collections.sort(subpopulation,  Collections.reverseOrder(Utilities.getBiasedFitnessComparator()));
+        }
+
+        System.out.println();
+        System.out.println("Killing individuals!");
+        for (Individual individual : subpopulation) {
+            System.out.println("Individual PC: " + individual.getPenalizedCost());
+
         }
     }
 

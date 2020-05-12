@@ -92,6 +92,7 @@ public class Individual {
 
     public void setPenalizedCost() {
         penalizedCost = scheduleCost + durationViolationCost + deadlineViolationCost + capacityViolationCost;
+        this.feasibility = (durationFeasibility && deadlineFeasibility && capacityFeasibility);
     }
 
     /*

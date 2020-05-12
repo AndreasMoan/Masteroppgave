@@ -86,10 +86,13 @@ public class Graph {
 
             // System.out.println("------------------- 1 --------------------");
 
+            int counter = 0;
+
             for (int time : graph.get(j).keySet()){
 
                 // System.out.println("-------------------------------- 2 -------------------------------");
                 buildEdgesFromNode(graph.get(j).get(time), voyageWithDepot.get(j + 1), j);
+                counter++;
             }
         }
     }
@@ -106,21 +109,14 @@ public class Graph {
 
 
         int earliestTheoreticalEndTime = nodeStartTime + (int) ceil((distance/maxSpeed + problemData.getDemandByOrderNumber(destinationOrderNumber)*timePerHiv)*multiplier);
-        int latestTheoreticalEndTime = nodeStartTime + (int) floor((distance/minSpeed + problemData.getDemandByOrderNumber(destinationOrderNumber)*timePerHiv)*multiplier);
-
-        // System.out.println("ETET : " + earliestTheoreticalEndTime);
-        // System.out.println("LTET : " + latestTheoreticalEndTime);
+        int latestTheoreticalEndTime = nodeStartTime + (int) ceil((distance/minSpeed + problemData.getDemandByOrderNumber(destinationOrderNumber)*timePerHiv)*multiplier);
 
         int finServicingTime = earliestTheoreticalEndTime;
 
-        boolean continue_ = true;
+        int counter = 0;
         while (/*continue_ && */ finServicingTime <= latestTheoreticalEndTime ) {
 
-            // System.out.println("Edge creation iteration, ");
-
             finServicingTime = getEarliestFeasibleSercivingFinishingTime(finServicingTime , destinationOrderNumber, 0);
-
-            // System.out.println("Fin servicing time: " + finServicingTime);
 
             double[] serviceInfo = servicingCalculations(finServicingTime, destinationOrderNumber);
 
@@ -133,8 +129,6 @@ public class Graph {
             }
 
             double[] idlingNeededInfo = isIdlingNeeded(realStartTime, distance, finIdlingTime);
-
-            continue_ = (!(idlingNeededInfo[0] >= 0));
 
             double[] idlingInfo = idlingCalculations(idlingNeededInfo[1], finIdlingTime);
 
@@ -171,6 +165,8 @@ public class Graph {
 
             childNode.addParentEdge(currEdge);
             node.addChildEdge(currEdge);
+
+            counter ++;
 
             finServicingTime++;
         }
