@@ -5,7 +5,6 @@ import HGSADCwSO.protocols.EducationProtocol;
 import HGSADCwSO.protocols.FitnessEvaluationProtocol;
 import javafx.util.Pair;
 
-import javax.rmi.CORBA.Util;
 import java.io.LineNumberReader;
 import java.lang.reflect.Array;
 import java.util.*;
