@@ -203,4 +203,16 @@ public class ProblemData {
     public Double getWeatherImpactByHour(int hour) {
         return getWeatherImpactByState().get(getWeatherStateByHour().get(hour));
     }
+
+    public boolean isInstallationByIndexClosed(int installationNumber, double time){
+        double opening_hour = getInstallationByNumber().get(installationNumber).getOpeningHour();
+        double closing_hour = getInstallationByNumber().get(installationNumber).getClosingHour();
+        double time_of_day = time%24;
+        return time_of_day > opening_hour && time_of_day < closing_hour;
+    }
+
+    public boolean isInstallationByOrderIndexClosed(int orderNumber, double time) {
+        int installation_number = getInstallationNumberByOrderNumber(orderNumber);
+        return isInstallationByIndexClosed(installation_number, time);
+    }
 }

@@ -189,7 +189,7 @@ public class Graph {
         double servicingTimeLeft = problemData.getDemandByOrderNumber(destinationOrder) * timePerHiv;
 
         while (servicingTimeLeft - 1 / problemData.getWeatherImpactByHour((int) realTime) > 0) {
-            if (problemData.getWeatherStateByHour().get((int) realTime) == 3) {
+            if (problemData.getWeatherStateByHour().get((int) realTime) == 3 /*|| !(problemData.isInstallationByOrderIndexClosed(destinationOrder, realTime))*/) { //TODO implement this comment!
                 return false;
             }
             if (realTime % 1 > 0) {

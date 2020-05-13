@@ -62,7 +62,10 @@ public class Process {
     }
 
     public void evaluate(Individual individual) {
+        heuristicFitnessEvaluationProtocol.evaluate(individual);
+        System.out.println("Heuristic: " + individual.getPenalizedCost() + " " + individual.getCapacityViolation() + " " + individual.getDurationViolation() + " " + individual.getDeadlineViolation());
         fitnessEvaluationProtocol.evaluate(individual);
+        System.out.println("DAG:       " + individual.getPenalizedCost() + " " + individual.getCapacityViolation() + " " + individual.getDurationViolation() + " " + individual.getDeadlineViolation());
     }
 
     public void repair(Individual individual) {
@@ -81,6 +84,7 @@ public class Process {
     public void mutate(Individual individual) {
         educationProtocol.interVoyageMutation(individual);
     }
+
 
     public Individual cloneGoodIndividual(ArrayList<Individual> feasiblePopulation, ArrayList<Individual> infeasiblePopulation) {
         ArrayList<Individual> parents = selectParents(feasiblePopulation, infeasiblePopulation);
@@ -146,7 +150,7 @@ public class Process {
     private void selectEducationProtocol(){
         switch (problemData.getHeuristicParameters().get("Education protocol")) {
             case "cost":
-                educationProtocol = new EducationStandard(problemData, heuristicFitnessEvaluationProtocol, penaltyAdjustmentProtocol);
+                educationProtocol = new EducationStandard(problemData, fitnessEvaluationProtocol, penaltyAdjustmentProtocol);
                 break;
             default:
                 educationProtocol = null;

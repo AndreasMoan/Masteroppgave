@@ -42,7 +42,7 @@ public class HackInitProblemData {
 
         // Chances
 
-        heuristicInstanceParameters.put("Education rate", "0,6");
+        heuristicInstanceParameters.put("Education rate", "1");
         heuristicInstanceParameters.put("Repair rate", "0,8");
 
         // Discretization:
@@ -61,7 +61,7 @@ public class HackInitProblemData {
         // Stopping and diversification
 
         heuristicInstanceParameters.put("Iterations before diversify","500");
-        heuristicInstanceParameters.put("Iterations before stopping","10000");
+        heuristicInstanceParameters.put("Iterations before stopping","2000");
 
         // Neighbourhood
         heuristicInstanceParameters.put("Proportion of individuals considered for distance evaluation", "0,2");

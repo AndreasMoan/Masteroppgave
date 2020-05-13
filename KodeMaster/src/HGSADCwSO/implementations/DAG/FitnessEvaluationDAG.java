@@ -67,7 +67,7 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
 
     public void evaluate(Individual individual, double durationViolationPenalty, double capacityViolationPenalty, double deadlineViolationPenalty) {
 
-        System.out.println("dur: " + durationViolationPenalty + "   dead:  " + deadlineViolationPenalty + "   cap: " + capacityViolationPenalty);
+        // System.out.println("dur: " + durationViolationPenalty + "   dead:  " + deadlineViolationPenalty + "   cap: " + capacityViolationPenalty);
 
         individual.resetFeasability();
         Genotype genotype = individual.getGenotype();
@@ -128,7 +128,7 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
 
         //individual.setSchedule(schedule)
 
-        System.out.println("Schedule cost: " + scheduleCost + " penalized: " + individual.getPenalizedCost() + " || Violations | cap: " + capacityViolation + ", dead: "+ deadlineViolation + ", dur: "+ durationViolation);
+        // System.out.println("Schedule cost: " + scheduleCost + " penalized: " + individual.getPenalizedCost() + " || Violations | cap: " + capacityViolation + ", dead: "+ deadlineViolation + ", dur: "+ durationViolation);
     }
     
     public Graph getDAG(ArrayList<Integer> tour) {

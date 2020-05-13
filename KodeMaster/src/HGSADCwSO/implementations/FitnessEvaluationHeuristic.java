@@ -109,6 +109,8 @@ public class FitnessEvaluationHeuristic extends FitnessEvaluationBaseline {
         return new double[] {fuelPrice*totalConsumption, capacityViolation, totalDeadlineViolatin, durationViolation};
     }
 
+
+
     private void selectProtocols() {
         selectSailingLegCalculationsProtocol();
     }
