@@ -5,8 +5,6 @@ import HGSADCwSO.protocols.EducationProtocol;
 import HGSADCwSO.protocols.FitnessEvaluationProtocol;
 import javafx.util.Pair;
 
-import javax.rmi.CORBA.Util;
-import java.io.LineNumberReader;
 import java.lang.reflect.Array;
 import java.util.*;
 
@@ -36,14 +34,23 @@ public class EducationStandard implements EducationProtocol {
         //if (randomNumber > problemData.getHeuristicParameterDouble("Education rate")) {
 
         int improvement = 3;
+        counter = 0;
         fitnessEvaluationProtocol.evaluate(individual);
         double penalized_cost_before = individual.getPenalizedCost();
-
+        System.out.println(isRepair);
         voyageReduction(individual);
+        System.out.println("Counter after voyage reduction: " + counter);
+        counter = 0;
+
+        neighbourizeFriendlyInstallations(individual);
+        System.out.println("Counter after neighbourize:     " + counter);
+        counter = 0;
 
         while (improvement > 0) {
 
-            interVoyageMutation(individual);
+            inter_voyage_improvement(individual);
+            System.out.println("Counter after inter voyage:     " + counter);
+            counter = 0;
 
             fitnessEvaluationProtocol.evaluate(individual);
             double penalized_cost_after = individual.getPenalizedCost();
@@ -54,6 +61,7 @@ public class EducationStandard implements EducationProtocol {
             penalized_cost_before = penalized_cost_after;
         }
         neighbourhoodSearch(individual);
+        System.out.println("Counter after nhs:              " + counter);
 
         /*
         System.out.println("EDUCATING!");
@@ -120,7 +128,6 @@ public class EducationStandard implements EducationProtocol {
                 chromosome.put(vessel, new ArrayList<>(improvedVoyage));
             }
         }
-        neighbourizeFriendlyInstallations(individual);
         fitnessEvaluationProtocol.evaluate(individual);
 
         counter ++;
@@ -172,19 +179,21 @@ public class EducationStandard implements EducationProtocol {
         ArrayList<Integer> orders = new ArrayList<>(voyage);
         ArrayList<Integer> untreatedOrders = new ArrayList<>(voyage);
 
+        double oldVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(orders, vessel);
+
         while (untreatedOrders.size() > 0) {
             Integer u = Utilities.pickAndRemoveRandomElementFromList(untreatedOrders);
             ArrayList<Integer> neighbours = getNeighbours(u, orders);
             while (neighbours.size() > 0) {
                 Integer v = Utilities.pickAndRemoveRandomElementFromList(neighbours);
-                orders = doRandomMove(u, v, orders, vessel);
+                orders = doRandomMove(u, v, orders, vessel, oldVoyagePenalizedCost);
             }
         }
         return new ArrayList<>(orders);
     }
 
 
-    private ArrayList<Integer> doRandomMove(Integer u, Integer v, ArrayList<Integer> orders, int vessel) {
+    private ArrayList<Integer> doRandomMove(Integer u, Integer v, ArrayList<Integer> orders, int vessel, double oldVoyagePenalizedCost) {
         ArrayList<Integer> unusedMoves = new ArrayList<>(); //list of unused moves
         Move move = new Move();
         for (int i = 0; i < move.getNumberOfMoves(); i++) {
@@ -194,12 +203,10 @@ public class EducationStandard implements EducationProtocol {
         while (unusedMoves.size() > 0) { //try moves in random order
             int moveNumber = Utilities.pickAndRemoveRandomElementFromList(unusedMoves);
             ArrayList<Integer> newOrders = move.doMove(u, v, orders, moveNumber);
-            double oldVoyagePenalizedCost;
             double newVoyagePenalizedCost;
 
             if (!isRepair) { //Normal education
-                oldVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(orders, vessel);
-                counter ++;
+
                 newVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(newOrders, vessel);
                 counter ++;
             }
@@ -210,6 +217,7 @@ public class EducationStandard implements EducationProtocol {
 
                 oldVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(orders, vessel, durationViolationPenalty, capacityViolationPenalty, deadlineViolationPenalty);
                 counter ++;
+
                 newVoyagePenalizedCost = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(newOrders, vessel, durationViolationPenalty, capacityViolationPenalty, deadlineViolationPenalty);
                 counter ++;
             }
@@ -251,21 +259,7 @@ public class EducationStandard implements EducationProtocol {
         return neighbours;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public void interVoyageMutation(Individual individual){
+    public void inter_voyage_improvement(Individual individual){
 
         // System.out.println("Before: " + individual.getVesselTourChromosome());
         
@@ -280,6 +274,7 @@ public class EducationStandard implements EducationProtocol {
             }
 
             double cost_of_unchanged_voyage = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(chromosome.get(vessel_number), vessel_number);
+            counter++;
 
             int index_of_order_to_be_moved = get_index_of_order_to_be_moved(chromosome.get(vessel_number), vessel_number);
 
@@ -289,6 +284,7 @@ public class EducationStandard implements EducationProtocol {
                 int number_of_order_to_be_moved = reduced_voyage.get(index_of_order_to_be_moved);
                 reduced_voyage.remove(index_of_order_to_be_moved);
                 double cost_reduction_from_move = cost_of_unchanged_voyage - fitnessEvaluationProtocol.getPenalizedCostOfVoyage(chromosome.get(vessel_number), vessel_number);
+                counter++;
 
                 int[] move_destination_info = get_move_destination_info(number_of_order_to_be_moved, vessel_number, cost_reduction_from_move, chromosome);
 
@@ -312,6 +308,7 @@ public class EducationStandard implements EducationProtocol {
     private int get_index_of_order_to_be_moved(ArrayList<Integer> voyage, int vessel){
 
         double cost_of_unchanged_voyage = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(voyage, vessel);
+        counter++;
 
         double lowest_cost_reduction = Double.POSITIVE_INFINITY;
 
@@ -324,6 +321,7 @@ public class EducationStandard implements EducationProtocol {
             reduced_voyage.remove(index);
 
             double cost_reduction = Math.max(0, cost_of_unchanged_voyage - fitnessEvaluationProtocol.getPenalizedCostOfVoyage(reduced_voyage, vessel));
+            counter++;
 
             remove_cost_reductions.add(cost_reduction);
 
@@ -364,6 +362,7 @@ public class EducationStandard implements EducationProtocol {
             }
 
             double cost_of_second_unchanged_voyage = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(second_unchenged_voyage, second_vessel_number);
+            counter++;
 
             for (int second_index = 0; second_index <= second_unchenged_voyage.size(); second_index++) {
 
@@ -371,6 +370,7 @@ public class EducationStandard implements EducationProtocol {
                 second_extended_voyage.add(second_index, order_number);
 
                 double cost_increment_from_move = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(second_extended_voyage, second_vessel_number) - cost_of_second_unchanged_voyage;
+                counter++;
 
                 double total_cost_reduction_from_move = Math.max(0, cost_reduction_from_move - cost_increment_from_move);
 
@@ -390,6 +390,47 @@ public class EducationStandard implements EducationProtocol {
         }
         return new int[] {-1, -1};
     }
+
+    /*
+
+    private void intra_voyage_improvement(Individual individual) {
+        Move move = new Move();
+        HashMap<Integer, ArrayList<Integer>> chromosme_copy = Utilities.deepCopyVesselTour(individual.getVesselTourChromosome());
+        for (int vessel_number : chromosme_copy.keySet()) {
+
+            ArrayList<Integer> old_voyage = chromosme_copy.get(vessel_number);
+
+            if (old_voyage.size() == 0) {
+                continue;
+            }
+
+            double penalized_cost_of_old_voyage = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(old_voyage, vessel_number);
+
+            ArrayList<Double> list_of_cost_improvements = new ArrayList<>();
+            ArrayList<Integer> list_of_first_indices = new ArrayList<>();
+            ArrayList<Integer> list_of_second_indices = new ArrayList<>();
+            ArrayList<Integer> list_of_move_numbers = new ArrayList<>();
+
+            for (int first_index = 0; first_index < old_voyage.size(); first_index++) {
+                for (int second_index = 0; second_index < old_voyage.size() && second_index != first_index; second_index++) {
+                    ArrayList<Integer> new_voyage = new ArrayList<>(old_voyage);
+                    new_voyage = move.doMove(first_index, second_index, new_voyage, 1);
+                    double penalized_cost_of_new_voyage = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(new_voyage,vessel_number);
+                    double cost_improvement = Math.max(0, penalized_cost_of_old_voyage - penalized_cost_of_new_voyage);
+
+                    list_of_cost_improvements.add(cost_improvement);
+                    list_of_first_indices.add(first_index);
+                    list_of_second_indices.add(second_index);
+                    list_of_move_numbers.add(1);
+
+                }
+            }
+
+            Utilities.normalize(list_of_cost_improvements)
+        }
+    }
+    
+     */
 
 
     public void mergeVoyages(Individual individual) {

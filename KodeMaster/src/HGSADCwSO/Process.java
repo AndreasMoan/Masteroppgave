@@ -62,8 +62,6 @@ public class Process {
     }
 
     public void evaluate(Individual individual) {
-        heuristicFitnessEvaluationProtocol.evaluate(individual);
-        System.out.println("Heuristic: " + individual.getPenalizedCost() + " " + individual.getCapacityViolation() + " " + individual.getDurationViolation() + " " + individual.getDeadlineViolation());
         fitnessEvaluationProtocol.evaluate(individual);
         System.out.println("DAG:       " + individual.getPenalizedCost() + " " + individual.getCapacityViolation() + " " + individual.getDurationViolation() + " " + individual.getDeadlineViolation());
     }
@@ -82,7 +80,7 @@ public class Process {
     }
 
     public void mutate(Individual individual) {
-        educationProtocol.interVoyageMutation(individual);
+        educationProtocol.inter_voyage_improvement(individual);
     }
 
 

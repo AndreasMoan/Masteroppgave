@@ -213,6 +213,18 @@ public class Utilities {
         return probabilities.size() -1;
     }
 
+    public static int getBestElementFromDistribution(ArrayList<Double> probabilities) {
+        double best = Double.POSITIVE_INFINITY;
+        int index = 0;
+        for (int i = 0; i < probabilities.size(); i++) {
+            if (probabilities.get(i) < best) {
+                best = probabilities.get(i);
+                index = i;
+            }
+        }
+
+        return index;
+    }
 
 
 }

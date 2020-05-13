@@ -8,5 +8,5 @@ public interface EducationProtocol {
 
     public void repairEducate(Individual individual, int penaltyMultiplyer);
 
-    public void interVoyageMutation(Individual individual);
+    public void inter_voyage_improvement(Individual individual);
 }
