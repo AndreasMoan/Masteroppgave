@@ -68,7 +68,7 @@ public class HackInitProblemData {
         heuristicInstanceParameters.put("Granularity threshold in RI", "0,2"); //share of neighbourhood
 
         //Cache
-        heuristicInstanceParameters.put("Max cached tours per vessel", "200000");
+        heuristicInstanceParameters.put("Max cached tours per vessel", "1000000");
         heuristicInstanceParameters.put("Max cached graphs", "1000");
 
         //Mutation

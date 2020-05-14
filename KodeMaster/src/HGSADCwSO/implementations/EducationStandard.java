@@ -16,6 +16,7 @@ public class EducationStandard implements EducationProtocol {
     protected boolean isRepair;
     protected int penaltyMultiplier;
     private int counter = 0;
+    private boolean deterministic_search = true;
 
     public EducationStandard(ProblemData problemData, FitnessEvaluationProtocol fitnessEvaluationProtocol, PenaltyAdjustmentProtocol penaltyAdjustmentProtocol) {
         this.problemData = problemData;
@@ -33,7 +34,7 @@ public class EducationStandard implements EducationProtocol {
 
         //if (randomNumber > problemData.getHeuristicParameterDouble("Education rate")) {
 
-        int improvement = 3;
+        boolean improvement = true;
         counter = 0;
         fitnessEvaluationProtocol.evaluate(individual);
         double penalized_cost_before = individual.getPenalizedCost();
@@ -42,11 +43,15 @@ public class EducationStandard implements EducationProtocol {
         System.out.println("Counter after voyage reduction: " + counter);
         counter = 0;
 
-        neighbourizeFriendlyInstallations(individual);
-        System.out.println("Counter after neighbourize:     " + counter);
-        counter = 0;
+        // neighbourizeFriendlyInstallations(individual);
+        // System.out.println("Counter after neighbourize:     " + counter);
+        // counter = 0;
 
-        while (improvement > 0) {
+        while (improvement) {
+
+            neighbourhoodSearch(individual);
+            System.out.println("Counter after nhs:              " + counter);
+            counter = 0;
 
             inter_voyage_improvement(individual);
             System.out.println("Counter after inter voyage:     " + counter);
@@ -56,7 +61,7 @@ public class EducationStandard implements EducationProtocol {
             double penalized_cost_after = individual.getPenalizedCost();
 
             if (!(penalized_cost_before - penalized_cost_after > 0.1)) {
-                improvement --;
+                improvement = false;
             }
             penalized_cost_before = penalized_cost_after;
         }
