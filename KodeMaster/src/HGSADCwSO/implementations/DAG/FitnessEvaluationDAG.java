@@ -195,7 +195,7 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
 
 
 
-    private double[] getTourInfo(Graph graph, int vesselReturnTime) { //TODO REDO THIS CODE & INCLUDE FEASIBILITY
+    private double[] getTourInfo(Graph graph, int vesselReturnTime) {
 
         double leastPenalizedCost = Double.POSITIVE_INFINITY;
         double leastCost = Double.POSITIVE_INFINITY;

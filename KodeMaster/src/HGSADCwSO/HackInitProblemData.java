@@ -10,7 +10,7 @@ public class HackInitProblemData {
 
         HashMap<String, String> problemInstanceParameters = new HashMap<String, String>();
 
-        problemInstanceParameters.put("fuel price","10,0");
+        problemInstanceParameters.put("fuel price","7.1");
         problemInstanceParameters.put("Servicing consumption","0,4");
         problemInstanceParameters.put("Idling consumption","0,25");
         problemInstanceParameters.put("Max speed","14,0");

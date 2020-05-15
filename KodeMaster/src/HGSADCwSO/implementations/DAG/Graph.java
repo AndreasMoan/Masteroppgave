@@ -121,21 +121,19 @@ public class Graph {
             double[] serviceInfo = servicingCalculations(finServicingTime, destinationOrderNumber);
 
             double servicingCost = serviceInfo[0];
-            double finIdlingTime = serviceInfo[1];
+            double real_fin_idling_time = serviceInfo[1];
 
-            if (!isArrivalPossible(realStartTime, distance, finIdlingTime)) {
+            if (!isArrivalPossible(realStartTime, distance, real_fin_idling_time)) {
                 finServicingTime++;
                 continue;
             }
 
-            double[] idlingNeededInfo = isIdlingNeeded(realStartTime, distance, finIdlingTime);
-
-            double[] idlingInfo = idlingCalculations(idlingNeededInfo[1], finIdlingTime);
+            double[] idlingInfo = idlingCalculations(realStartTime, distance, real_fin_idling_time);
 
             double idlingCost = idlingInfo[0];
-            double finSailingTime = idlingInfo[1];
+            double real_fin_sailing_time = idlingInfo[1];
 
-            double[] timeInAllWeatherStates = getTimeInAllWS(realStartTime, convertNodeTimeToRealTime(finServicingTime));
+            double[] timeInAllWeatherStates = getTimeInAllWS(realStartTime, real_fin_sailing_time);
 
             double adjustedAverageSpeed = calculateAdjustedAverageSpeed(timeInAllWeatherStates, distance);
 
@@ -188,16 +186,27 @@ public class Graph {
 
         double servicingTimeLeft = problemData.getDemandByOrderNumber(destinationOrder) * timePerHiv;
 
-        while (servicingTimeLeft - 1 / problemData.getWeatherImpactByHour((int) realTime) > 0) {
-            if (problemData.getWeatherStateByHour().get((int) realTime) == 3 /*|| !(problemData.isInstallationByOrderIndexClosed(destinationOrder, realTime))*/) { //TODO implement this comment!
+        while (servicingTimeLeft > 0) {
+            if (problemData.getWeatherStateByHour().get((int) realTime) == 3 || problemData.isInstallationByOrderIndexClosed(destinationOrder, realTime)) {
                 return false;
             }
             if (realTime % 1 > 0) {
-                realTime = floor(realTime);
-                servicingTimeLeft -= realTime % 1 / problemData.getWeatherImpactByHour((int) floor(realTime));
-            } else {
-                realTime--;
-                servicingTimeLeft -= 1 / problemData.getWeatherImpactByHour((int) floor(realTime));
+                if (servicingTimeLeft < (realTime % 1)/ problemData.getWeatherImpactByHour((int) floor(realTime))) {
+                    return true;
+                }
+                else {
+                    servicingTimeLeft -= (realTime % 1) / problemData.getWeatherImpactByHour((int) floor(realTime));
+                    realTime = floor(realTime);
+                }
+            }
+            else {
+                if (servicingTimeLeft < 1 / problemData.getWeatherImpactByHour((int) floor(realTime))){
+                    return true;
+                }
+                else {
+                    servicingTimeLeft -= 1 / problemData.getWeatherImpactByHour((int) floor(realTime));
+                    realTime--;
+                }
             }
         }
 
@@ -217,25 +226,34 @@ public class Graph {
 
         double realTime = convertNodeTimeToRealTime(time);
         double servicingTimeLeft = problemData.getDemandByOrderNumber(order)*timePerHiv;
-
         double consumption = 0;
 
-        while (servicingTimeLeft -1/problemData.getWeatherImpactByHour((int)floor(realTime)) > 0) {
-            if (realTime%1 > 0) {
-                consumption += servicingConsumption * (realTime%1 * problemData.getWeatherImpactByHour((int) floor(realTime)));
-                servicingTimeLeft -= (1 - (realTime%1) / problemData.getWeatherImpactByHour((int) floor(realTime)));
-                realTime = floor(realTime);
-            } else {
-                consumption += servicingConsumption * problemData.getWeatherImpactByHour((int) realTime - 1);
-                servicingTimeLeft -= 1 / problemData.getWeatherImpactByHour((int) realTime - 1);
-                realTime--;
+        while (servicingTimeLeft > 0) {
+            if (realTime % 1 > 0) {
+                if (servicingTimeLeft < (realTime % 1)/ problemData.getWeatherImpactByHour((int) floor(realTime))) {
+                    consumption += servicingConsumption * servicingTimeLeft * problemData.getWeatherImpactByHour((int) floor(realTime));
+                    realTime -= servicingTimeLeft * problemData.getWeatherImpactByHour((int) floor(realTime));
+                    servicingTimeLeft = -1;
+                }
+                else {
+                    consumption += servicingConsumption * (realTime % 1) * problemData.getWeatherImpactByHour((int) floor(realTime));
+                    servicingTimeLeft -= (realTime % 1) / problemData.getWeatherImpactByHour((int) floor(realTime));
+                    realTime = floor(realTime);
+                }
+            }
+            else {
+                if (servicingTimeLeft < 1 / problemData.getWeatherImpactByHour((int) realTime - 1)) {
+                    consumption += servicingConsumption * servicingTimeLeft * problemData.getWeatherImpactByHour((int) realTime - 1);
+                    realTime -= servicingTimeLeft * problemData.getWeatherImpactByHour((int) realTime - 1);
+                    servicingTimeLeft = - 1;
+                }
+                else {
+                    consumption += servicingConsumption * problemData.getWeatherImpactByHour((int) realTime - 1);
+                    servicingTimeLeft -= 1 / problemData.getWeatherImpactByHour((int) realTime - 1);
+                    realTime--;
+                }
             }
         }
-        if (servicingTimeLeft > 0){
-            consumption += servicingConsumption*servicingTimeLeft*problemData.getWeatherImpactByHour((int) realTime - 1);
-            realTime -= servicingTimeLeft;
-        }
-
         return new double[] {consumption, realTime};
     }
 
@@ -243,55 +261,74 @@ public class Graph {
 
         double[] tiws = getTimeInAllWS(startTime,finIdlingRealTime);
 
-        double maxDistance = tiws[0]*maxSpeed + tiws[1]*maxSpeedWS2 + tiws[2]*maxSpeedWS3;
+        double maxDistance = tiws[0]*maxSpeed + tiws[1]*maxSpeed + tiws[2]*maxSpeedWS2 + tiws[3]*maxSpeedWS3; //TODO fix get time in all ws and its dependencies
 
-        if (maxDistance >= distance) {
-            return true;
-        }
-
-        return false;
+        return maxDistance >= distance;
     }
 
 
-    private double[] isIdlingNeeded(double startTime, double distance, double finIdlingRealTime) {
+    private double[] idlingCalculations(double startTime, double distance, double finIdlingRealTime) {
 
         double longestSailingTime = distance/minSpeed;
 
         if (longestSailingTime >= finIdlingRealTime - startTime) {
-            return new double[] {-1.0 , 0};
+            return new double[] {0 , finIdlingRealTime};
         }
-        return new double[] {1, finIdlingRealTime - longestSailingTime - startTime};
+        double idling_duration = finIdlingRealTime - longestSailingTime - startTime;
+        double real_fin_sailing_time = finIdlingRealTime - idling_duration;
+        double[] time_in_weather_states = getTimeInAllWS(real_fin_sailing_time, finIdlingRealTime);
+        double consumption = 0;
+        for (int i = 0; i < time_in_weather_states.length; i++) {
+            consumption += time_in_weather_states[i] * problemData.getWeatherImpactByState().get(i) * idlingConsumption;
+        }
+        return new double[] {consumption, real_fin_sailing_time};
     }
 
-    private double[] idlingCalculations(double idlingTime, double finIdlingTime) {
-        return new double [] {idlingTime*idlingConsumption , finIdlingTime - idlingTime};
-    }
 
     private double[] getTimeInAllWS(double t1, double t2) {
         double tiws3 = getTimeInWS(t1, t2, 3);
         double tiws2 = getTimeInWS(t1, t2, 2);
-        double tiw01 = t2 - t1 - tiws3 - tiws2;
-        return new double[] {tiw01, tiws2, tiws3};
+        double tiws1 = getTimeInWS(t1, t2, 1);
+        double tiw0 = t2 - t1 - tiws3 - tiws2 - tiws1;
+        return new double[] {tiw0, tiws1, tiws2, tiws3};
     }
 
     private double getTimeInWS(double t1, double t2, int weatherState){
         double time = 0;
-        time += isWeatherState(weatherState, (int) t1) ? 1 - t1%1 : 0;
-        time += isWeatherState(weatherState, (int) t2) ? t2%1 : 0;
-        for (int i = (int) ceil(t1); i < (int) t2; i++ ){
-            time += isWeatherState(weatherState, i) ? 1 : 0;
+        double _t1 = t1;
+        while (_t1 < t2) {
+            if (_t1 % 1 > 0) {
+                if (t2 - _t1 < 1 - (_t1 % 1)) {
+                    time += isWeatherState(weatherState, (int) _t1) ? t2 - _t1 : 0;
+                    _t1 = t2 + 1;
+                }
+                else {
+                    time += isWeatherState(weatherState, (int) _t1) ? 1 - (_t1 % 1) : 0;
+                    _t1 = ceil(_t1);
+                }
+            }
+            else {
+                if (t2 - _t1 <= 1) {
+                    time += isWeatherState(weatherState, (int) _t1) ? t2 - _t1 : 0;
+                    _t1 = t2 + 1;
+                }
+                else {
+                    time += isWeatherState(weatherState, (int) _t1) ? 1 : 0;
+                    _t1 += 1;
+                }
+            }
         }
         return time;
     }
 
-    public boolean isWeatherState(int weatherState, int hour) {
+    private boolean isWeatherState(int weatherState, int hour) {
         return problemData.getWeatherStateByHour().get(hour) == weatherState;
     }
 
     private double calculateAdjustedAverageSpeed(double[] timeInAllWeatherStates, double distance) {
-        double durationWS3 = timeInAllWeatherStates[2];
-        double durationWS2 = timeInAllWeatherStates[1];
-        double durationWS01 = timeInAllWeatherStates[0];
+        double durationWS3 = timeInAllWeatherStates[3];
+        double durationWS2 = timeInAllWeatherStates[2];
+        double durationWS01 = timeInAllWeatherStates[0] + timeInAllWeatherStates[1];
         double duration = durationWS01 + durationWS2 + durationWS3;
 
         double speed = distance/(duration);
@@ -305,7 +342,7 @@ public class Graph {
                 speed += (durationWS3 * (speed - maxSpeedWS3)) / (durationWS01 + durationWS2);
             }
 
-            if (speed > maxSpeedWS3) {
+            if (speed > maxSpeedWS2) {
                 speed += (durationWS2 * (speed - maxSpeedWS2)) / (durationWS01);
             }
         }
@@ -315,9 +352,9 @@ public class Graph {
 
     private double sailingCalculations(double[] timeInAllWeatherStates, double adjustedAverageSpeed) {
         double cost = 0;
-        cost += timeInAllWeatherStates[0]*consumptionFunction(adjustedAverageSpeed);
-        cost += (adjustedAverageSpeed < maxSpeedWS2) ? timeInAllWeatherStates[1]*consumptionFunction(adjustedAverageSpeed + speedImpactWS2) : timeInAllWeatherStates[1]*consumptionFunction(maxSpeed);
-        cost += (adjustedAverageSpeed < maxSpeedWS3) ? timeInAllWeatherStates[2]*consumptionFunction(adjustedAverageSpeed + speedImpactWS3) : timeInAllWeatherStates[2]*consumptionFunction(maxSpeed);
+        cost += (timeInAllWeatherStates[0] + timeInAllWeatherStates[1])*consumptionFunction(adjustedAverageSpeed);
+        cost += (adjustedAverageSpeed < maxSpeedWS2) ? timeInAllWeatherStates[2]*consumptionFunction(adjustedAverageSpeed + speedImpactWS2) : timeInAllWeatherStates[1]*consumptionFunction(maxSpeed);
+        cost += (adjustedAverageSpeed < maxSpeedWS3) ? timeInAllWeatherStates[3]*consumptionFunction(adjustedAverageSpeed + speedImpactWS3) : timeInAllWeatherStates[2]*consumptionFunction(maxSpeed);
         return cost;
     }
 

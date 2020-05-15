@@ -40,7 +40,8 @@ public class EducationStandard implements EducationProtocol {
         double penalized_cost_before = individual.getPenalizedCost();
         System.out.println(isRepair);
         voyageReduction(individual);
-        System.out.println("Counter after voyage reduction: " + counter);
+        fitnessEvaluationProtocol.evaluate(individual);
+        System.out.println("Counter after voyage reduction: " + counter + "    PC: " + individual.getPenalizedCost());
         counter = 0;
 
         // neighbourizeFriendlyInstallations(individual);
@@ -50,11 +51,13 @@ public class EducationStandard implements EducationProtocol {
         while (improvement) {
 
             neighbourhoodSearch(individual);
-            System.out.println("Counter after nhs:              " + counter);
+            fitnessEvaluationProtocol.evaluate(individual);
+            System.out.println("Counter after nhs:              " + counter + "    PC: " + individual.getPenalizedCost());
             counter = 0;
 
             inter_voyage_improvement(individual);
-            System.out.println("Counter after inter voyage:     " + counter);
+            fitnessEvaluationProtocol.evaluate(individual);
+            System.out.println("Counter after inter voyage:     " + counter + "    PC: " + individual.getPenalizedCost());
             counter = 0;
 
             fitnessEvaluationProtocol.evaluate(individual);
@@ -66,7 +69,8 @@ public class EducationStandard implements EducationProtocol {
             penalized_cost_before = penalized_cost_after;
         }
         neighbourhoodSearch(individual);
-        System.out.println("Counter after nhs:              " + counter);
+        fitnessEvaluationProtocol.evaluate(individual);
+        System.out.println("Counter after nhs:              " + counter + "    PC: " + individual.getPenalizedCost());
 
         /*
         System.out.println("EDUCATING!");
@@ -264,7 +268,7 @@ public class EducationStandard implements EducationProtocol {
         return neighbours;
     }
 
-    public void inter_voyage_improvement(Individual individual){
+    public void inter_voyage_improvement(Individual individual){ //TODO This one does not currently work, find out why
 
         // System.out.println("Before: " + individual.getVesselTourChromosome());
         
@@ -389,6 +393,7 @@ public class EducationStandard implements EducationProtocol {
             }
         }
         if (found_improvement) {
+            System.out.println(total_cost_reductions_from_move);
             ArrayList<Double> second_probabilities = Utilities.normalize(total_cost_reductions_from_move);
             int chosen_move_index = Utilities.getRandomElementFromDistribution(second_probabilities);
             return new int[] {move_index.get(chosen_move_index), move_vessel.get(chosen_move_index)};

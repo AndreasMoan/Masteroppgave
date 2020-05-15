@@ -208,7 +208,7 @@ public class ProblemData {
         double opening_hour = getInstallationByNumber().get(installationNumber).getOpeningHour();
         double closing_hour = getInstallationByNumber().get(installationNumber).getClosingHour();
         double time_of_day = time%24;
-        return time_of_day > opening_hour && time_of_day < closing_hour;
+        return time_of_day < opening_hour || time_of_day > closing_hour;
     }
 
     public boolean isInstallationByOrderIndexClosed(int orderNumber, double time) {
