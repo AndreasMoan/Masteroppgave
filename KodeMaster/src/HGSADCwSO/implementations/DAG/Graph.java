@@ -84,22 +84,19 @@ public class Graph {
 
         for (int j = 0; j < voyageWithDepot.size() - 1; j++ ) {
 
-            // System.out.println("------------------- 1 --------------------");
-
-            int counter = 0;
-
             for (int time : graph.get(j).keySet()){
 
-                // System.out.println("-------------------------------- 2 -------------------------------");
+                // System.out.println();
+                // System.out.println("Building: " + graph.get(j).get(time).getOrderNumber() + " " + voyageWithDepot.get(j + 1));
+                // System.out.println();
                 buildEdgesFromNode(graph.get(j).get(time), voyageWithDepot.get(j + 1), j);
-                counter++;
             }
         }
     }
 
     private void buildEdgesFromNode(Node node, int destinationOrderNumber, int legNumber) {
 
-        System.out.println("Creating edges from time: " + node.getTime());
+        // System.out.println("Creating edges from time: " + node.getTime());
 
 
         double distance = problemData.getDistanceByIndex(problemData.getInstallationNumberByOrderNumber(node.getOrderNumber()),problemData.getInstallationNumberByOrderNumber(destinationOrderNumber));
@@ -112,7 +109,7 @@ public class Graph {
 
         int earliestTheoreticalEndTime = nodeStartTime + (int) ceil((distance/maxSpeed + problemData.getDemandByOrderNumber(destinationOrderNumber)*timePerHiv)*multiplier);
         int latestTheoreticalEndTime = nodeStartTime + (int) ceil((distance/minSpeed + problemData.getDemandByOrderNumber(destinationOrderNumber)*timePerHiv)*multiplier);
-        System.out.println("a " + earliestTheoreticalEndTime + " " + latestTheoreticalEndTime);
+        // System.out.println("a " + earliestTheoreticalEndTime + " " + latestTheoreticalEndTime);
 
         int finServicingTime = earliestTheoreticalEndTime;
 
@@ -121,15 +118,15 @@ public class Graph {
 
             finServicingTime = getEarliestFeasibleSercivingFinishingTime(finServicingTime , destinationOrderNumber, 0);
 
-            System.out.println("b " + finServicingTime);
+            // System.out.println("b " + finServicingTime);
 
             double[] serviceInfo = servicingCalculations(finServicingTime, destinationOrderNumber);
 
             double servicingCost = serviceInfo[0];
             double real_fin_idling_time = serviceInfo[1];
 
-            System.out.println("c " + servicingCost);
-            System.out.println("d " + real_fin_idling_time);
+            // System.out.println("c " + servicingCost);
+            // System.out.println("d " + real_fin_idling_time);
 
             if (!isArrivalPossible(realStartTime, distance, real_fin_idling_time)) {
                 finServicingTime++;
@@ -141,16 +138,16 @@ public class Graph {
             double idlingCost = idlingInfo[0];
             double real_fin_sailing_time = idlingInfo[1];
 
-            System.out.println("e " + idlingCost);
-            System.out.println("f " + real_fin_sailing_time);
+            // System.out.println("e " + idlingCost);
+            // System.out.println("f " + real_fin_sailing_time);
 
             double sailingCost = 0;
 
             if (distance != 0) {
                 double[] timeInAllWeatherStates = getTimeInAllWS(realStartTime, real_fin_sailing_time);
-                System.out.println("g " + timeInAllWeatherStates[0] + " " + timeInAllWeatherStates[1] + " " + timeInAllWeatherStates[2] + " " + timeInAllWeatherStates[3]);
+                // System.out.println("g " + timeInAllWeatherStates[0] + " " + timeInAllWeatherStates[1] + " " + timeInAllWeatherStates[2] + " " + timeInAllWeatherStates[3]);
                 double adjustedAverageSpeed = calculateAdjustedAverageSpeed(timeInAllWeatherStates, distance);
-                System.out.println("h " + adjustedAverageSpeed);
+                // System.out.println("h " + adjustedAverageSpeed);
                 sailingCost = (real_fin_sailing_time == realStartTime) ? 0 : sailingCalculations(timeInAllWeatherStates, adjustedAverageSpeed);
             }
 
@@ -161,8 +158,9 @@ public class Graph {
                 childNode = graph.get(legNumber + 1).get(finServicingTime);
             }
             else {
+                int destination_order_number = voyageWithDepot.get(legNumber + 1);
 
-                int deadlineNodeTime = problemData.getOrderDeadlineByNumber(node.getOrderNumber()) * 24 * (int) multiplier;
+                int deadlineNodeTime = problemData.getOrderDeadlineByNumber(destination_order_number) * 24 * (int) multiplier;
                 int deadlineViolation = Math.max(0, finServicingTime - deadlineNodeTime);
 
                 childNode = new Node(finServicingTime, destinationOrderNumber, deadlineViolation);
@@ -172,7 +170,7 @@ public class Graph {
             double total_consumption_tonnes = (sailingCost + idlingCost + servicingCost)/1000;
             double total_fuel_cost = total_consumption_tonnes * problemData.getProblemInstanceParameterDouble("Fuel price");
 
-            System.out.println("i " + total_fuel_cost);
+            // System.out.println("i " + total_fuel_cost);
 
             // System.out.println("Fin servicing time: " + finServicingTime);
 

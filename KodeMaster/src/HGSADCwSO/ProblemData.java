@@ -185,11 +185,11 @@ public class ProblemData {
     public void printProblemData() {
     }
 
-    public int getOrderDeadlineByNumber(int deadlineNumber){
-        if (deadlineNumber == 0){
-            return Integer.MAX_VALUE;
+    public int getOrderDeadlineByNumber(int order_number){
+        if (order_number == 0){
+            return 100000;
         }
-        else return ordersByNumber.get(deadlineNumber).getDeadline();
+        else return ordersByNumber.get(order_number).getDeadline();
     }
 
     public ArrayList<Integer> getWeatherStateByHour() {

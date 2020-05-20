@@ -11,6 +11,7 @@ public class HackInitProblemData {
         HashMap<String, String> problemInstanceParameters = new HashMap<String, String>();
 
         problemInstanceParameters.put("Fuel price","275,5"); //Price per tonne
+        problemInstanceParameters.put("Hourly spot rate","608");
         problemInstanceParameters.put("Servicing consumption","170");
         problemInstanceParameters.put("Idling consumption","120");
         problemInstanceParameters.put("Max speed","14,0");
@@ -18,7 +19,6 @@ public class HackInitProblemData {
         problemInstanceParameters.put("Impact on sailing from weather state 2","2,0");
         problemInstanceParameters.put("Impact on sailing from weather state 3","3,0");
         problemInstanceParameters.put("Time per hiv","0,1");
-        problemInstanceParameters.put("","");
         problemInstanceParameters.put("","");
 
         HashMap<String, String> heuristicInstanceParameters = new HashMap<String, String>();
@@ -42,8 +42,8 @@ public class HackInitProblemData {
 
         // Chances
 
-        heuristicInstanceParameters.put("Education rate", "1");
-        heuristicInstanceParameters.put("Repair rate", "0,8");
+        heuristicInstanceParameters.put("Education rate", "0,5");
+        heuristicInstanceParameters.put("Repair rate", "0,5");
 
         // Discretization:
 
@@ -68,8 +68,8 @@ public class HackInitProblemData {
         heuristicInstanceParameters.put("Granularity threshold in RI", "0,2"); //share of neighbourhood
 
         //Cache
-        heuristicInstanceParameters.put("Max cached tours per vessel", "1000000");
-        heuristicInstanceParameters.put("Max cached graphs", "1000");
+        heuristicInstanceParameters.put("Max cached tours per vessel", "10000");
+        heuristicInstanceParameters.put("Max cached graphs", "100");
 
         //Mutation
         heuristicInstanceParameters.put("Mutation chance","0,0");
@@ -78,9 +78,9 @@ public class HackInitProblemData {
 
         ArrayList<Vessel> vessels = new ArrayList<Vessel>();
 
-        vessels.add(new Vessel("PSV1", 100, 7, 14, 0, 0, 3));
-        // vessels.add(new Vessel("PSV2", 100, 7, 14, 0, 1, 2));
-        // vessels.add(new Vessel("PSV3", 100, 7, 14, 0, 2, 3));
+        vessels.add(new Vessel("PSV1", 100, 7, 14, 0, 0, 3, false));
+        vessels.add(new Vessel("PSV2", 100, 7, 14, 0, 1, 2, false));
+        vessels.add(new Vessel("PSV3", 100, 7, 14, 0, 2, 3, true));
 
 
         /*
@@ -124,7 +124,6 @@ public class HackInitProblemData {
         ArrayList<Order> orders = new ArrayList<Order>();
 
         orders.add(new Order(17,0, installations.get(4),1, 3));
-        /*
         orders.add(new Order(11,0, installations.get(16),2, 3));
         orders.add(new Order(28,0, installations.get(11),3, 3));
         orders.add(new Order(5,0, installations.get(17),4, 3));
@@ -133,7 +132,6 @@ public class HackInitProblemData {
         orders.add(new Order(18,0, installations.get(26),7, 2));
         orders.add(new Order(22,0, installations.get(9), 8, 2));
         orders.add(new Order(15,0, installations.get(1), 9, 2));
-
         orders.add(new Order(18,0, installations.get(2),10, 3));
         orders.add(new Order(19,0, installations.get(3),11, 3));
         orders.add(new Order(20,0, installations.get(22),12, 3));
@@ -142,8 +140,6 @@ public class HackInitProblemData {
         orders.add(new Order(20,0, installations.get(18),15, 3));
         orders.add(new Order(8,0, installations.get(15),16, 1));
 
-
-         */
 
         HashMap<Installation, HashMap<Installation, Double>> distances = new HashMap<Installation, HashMap<Installation, Double>>();
 
