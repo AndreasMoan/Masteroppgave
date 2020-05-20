@@ -28,7 +28,7 @@ public class Individual {
     private boolean feasibility;
     private boolean capacityFeasibility = true;
     private boolean durationFeasibility = true;
-    private boolean deadlineFeasibility= true;
+    private boolean deadlineFeasibility = true;
 
     private int costRank;
     private int diversityRank;

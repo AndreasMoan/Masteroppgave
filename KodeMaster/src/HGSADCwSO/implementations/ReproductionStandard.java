@@ -128,66 +128,39 @@ public class ReproductionStandard implements ReproductionProtocol {
 
         //STEP 3:
 
+        Individual offspring = new Individual(kid, fitnessEvaluationProtocol);
+        fitnessEvaluationProtocol.evaluate(offspring);
+        double unfinished_penalized_cost = offspring.getPenalizedCost();
+        double candidate_offspring_penalized_cost = 0;
+
         for (int orderNumber : allOrders) {
 
-            double leastAddedDistance =  Double.POSITIVE_INFINITY;
+            double least_added_cost =  Double.POSITIVE_INFINITY;
             int bestInsertionVessel = 0;
             int bestInsertionPosition = 0;
+
             for (int vesselNumber = 0; vesselNumber < kid.size(); vesselNumber++) {
 
                 for (int insertionPosition = 0; insertionPosition <= kid.get(vesselNumber).size(); insertionPosition++){
 
-                    if (kid.get(vesselNumber).size() == 0) {
-                        if (problemData.getDistanceByIndex(0, problemData.getInstallationNumberByOrderNumber(orderNumber))*2
-                                < leastAddedDistance) {
+                    HashMap<Integer, ArrayList<Integer>> copy_of_kid = Utilities.deepCopyVesselTour(kid);
+                    copy_of_kid.get(vesselNumber).add(insertionPosition, orderNumber);
+                    Individual candidate_offspring = new Individual(copy_of_kid, fitnessEvaluationProtocol);
+                    fitnessEvaluationProtocol.evaluate(candidate_offspring);
+                    candidate_offspring_penalized_cost = candidate_offspring.getPenalizedCost();
 
-                            leastAddedDistance = problemData.getDistanceByIndex(0, problemData.getInstallationNumberByOrderNumber(orderNumber))*2;
-                            bestInsertionVessel = vesselNumber;
-                            bestInsertionPosition = insertionPosition;
+                    double added_cost = Math.max(0, candidate_offspring_penalized_cost - unfinished_penalized_cost);
 
-                        }
+                    if (added_cost < least_added_cost) {
+                        least_added_cost = added_cost;
+                        bestInsertionPosition = insertionPosition;
+                        bestInsertionVessel = vesselNumber;
                     }
-                    else if (insertionPosition == 0) {
-                        //System.out.println("position: " + insertionPosition + " installation: " + problemData.getOrdersByNumber().get(orderNumber).getInstallation().getNumber() + " installation: " + problemData.getInstallationByNumber().get(kid.get(vesselNumber).get(insertionPosition)).getNumber());
 
-                        if (problemData.getDistanceByIndex(0, problemData.getInstallationNumberByOrderNumber(orderNumber))
-                                + problemData.getDistanceByIndex(problemData.getInstallationNumberByOrderNumber(orderNumber), problemData.getInstallationNumberByOrderNumber(kid.get(vesselNumber).get(insertionPosition)))
-                                < leastAddedDistance) {
-
-                            leastAddedDistance = problemData.getDistanceByIndex(0, problemData.getInstallationNumberByOrderNumber(orderNumber))
-                                    + problemData.getDistanceByIndex(problemData.getInstallationNumberByOrderNumber(orderNumber), problemData.getInstallationNumberByOrderNumber(kid.get(vesselNumber).get(insertionPosition)));
-                            bestInsertionVessel = vesselNumber;
-                            bestInsertionPosition = insertionPosition;
-                        }
-                    }
-                    else if (insertionPosition == kid.get(vesselNumber).size()) {
-                        //System.out.println("position: " + insertionPosition + " installation: " + problemData.getOrdersByNumber().get(orderNumber).getInstallation().getNumber() + " installation: " + problemData.getInstallationByNumber().get(kid.get(vesselNumber).get(insertionPosition)).getNumber());
-
-                        if (problemData.getDistanceByIndex(0, problemData.getInstallationNumberByOrderNumber(orderNumber))
-                                + problemData.getDistanceByIndex(problemData.getInstallationNumberByOrderNumber(orderNumber), problemData.getInstallationNumberByOrderNumber(kid.get(vesselNumber).get(insertionPosition-1)))
-                                < leastAddedDistance) {
-
-                            leastAddedDistance = problemData.getDistanceByIndex(0, problemData.getInstallationNumberByOrderNumber(orderNumber))
-                                    + problemData.getDistanceByIndex(problemData.getInstallationNumberByOrderNumber(orderNumber), problemData.getInstallationNumberByOrderNumber(kid.get(vesselNumber).get(insertionPosition-1)));
-                            bestInsertionVessel = vesselNumber;
-                            bestInsertionPosition = insertionPosition;
-                        }
-                    }
-                    else {
-
-                        if (problemData.getDistanceByIndex(problemData.getInstallationNumberByOrderNumber(kid.get(vesselNumber).get(insertionPosition -1)), problemData.getInstallationNumberByOrderNumber(orderNumber))
-                                + problemData.getDistanceByIndex(problemData.getInstallationNumberByOrderNumber(kid.get(vesselNumber).get(insertionPosition)), problemData.getInstallationNumberByOrderNumber(kid.get(vesselNumber).get(insertionPosition)))
-                                < leastAddedDistance) {
-
-                            leastAddedDistance = problemData.getDistanceByIndex(problemData.getInstallationNumberByOrderNumber(kid.get(vesselNumber).get(insertionPosition -1)), problemData.getInstallationNumberByOrderNumber(orderNumber))
-                                    + problemData.getDistanceByIndex(problemData.getInstallationNumberByOrderNumber(kid.get(vesselNumber).get(insertionPosition)), problemData.getInstallationNumberByOrderNumber(kid.get(vesselNumber).get(insertionPosition)));
-                            bestInsertionVessel = vesselNumber;
-                            bestInsertionPosition = insertionPosition;
-                        }
-                    }
                 }
             }
             kid.get(bestInsertionVessel).add(bestInsertionPosition,orderNumber);
+            unfinished_penalized_cost = candidate_offspring_penalized_cost;
         }
         return new Individual(kid, fitnessEvaluationProtocol);
     }

@@ -83,39 +83,34 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
             ArrayList<Integer> tour = genotype.getVesselTourChromosome().get(vessel.getNumber());
 
             if (tour.size() == 0) {
-                scheduleCost += 0;
-                durationViolation += 0;
-                deadlineViolation += 0;
-                capacityViolation += 0;
+                continue;
+            }
+            if (cachedVesselTours.get(vessel.getNumber()).containsKey(tour)) {
+                scheduleCost += cachedVesselTours.get(vessel.getNumber()).get(tour)[0];
+                durationViolation += cachedVesselTours.get(vessel.getNumber()).get(tour)[1];
+                deadlineViolation += cachedVesselTours.get(vessel.getNumber()).get(tour)[2];
+                capacityViolation += cachedVesselTours.get(vessel.getNumber()).get(tour)[3];
             }
             else {
-                if (cachedVesselTours.get(vessel.getNumber()).containsKey(tour)) {
-                    scheduleCost += cachedVesselTours.get(vessel.getNumber()).get(tour)[0];
-                    durationViolation += cachedVesselTours.get(vessel.getNumber()).get(tour)[1];
-                    deadlineViolation += cachedVesselTours.get(vessel.getNumber()).get(tour)[2];
-                    capacityViolation += cachedVesselTours.get(vessel.getNumber()).get(tour)[3];
+                Graph graph = getDAG(tour);
+                doDijkstra(graph, vessel.getReturnDay()*24*multiplier, durationViolationPenalty, deadlineViolationPenalty); //TODO check correct return time
+                double[] vesselTourInfo = getTourInfo(graph, vessel.getReturnDay()*24*multiplier);
+
+                scheduleCost += vesselTourInfo[0];
+                durationViolation += vesselTourInfo[1];
+                deadlineViolation += vesselTourInfo[2];
+
+
+                double capacityReqOfTour = 0;
+                for (int orderNumber : tour) {
+                    capacityReqOfTour += problemData.getDemandByOrderNumber(orderNumber);
                 }
-                else {
-                    Graph graph = getDAG(tour);
-                    doDijkstra(graph, vessel.getReturnDay()*24*multiplier, durationViolationPenalty, deadlineViolationPenalty); //TODO check correct return time
-                    double[] vesselTourInfo = getTourInfo(graph, vessel.getReturnDay()*24*multiplier);
+                // System.out.println("Capacuty: " + vessel.getCapacity() + ", tour req: " + capacityReqOfTour);
+                capacityViolation += Math.max(0, capacityReqOfTour - vessel.getCapacity());
 
-                    scheduleCost += vesselTourInfo[0];
-                    durationViolation += vesselTourInfo[1];
-                    deadlineViolation += vesselTourInfo[2];
+                cachedVesselTours.get(vessel.getNumber()).put(tour, new double[] {vesselTourInfo[0], vesselTourInfo[1], vesselTourInfo[2], Math.max(0, capacityReqOfTour - vessel.getCapacity())});
 
-
-                    double capacityReqOfTour = 0;
-                    for (int orderNumber : tour) {
-                        capacityReqOfTour += problemData.getDemandByOrderNumber(orderNumber);
-                    }
-                    // System.out.println("Capacuty: " + vessel.getCapacity() + ", tour req: " + capacityReqOfTour);
-                    capacityViolation += Math.max(0, capacityReqOfTour - vessel.getCapacity());
-
-                    cachedVesselTours.get(vessel.getNumber()).put(tour, new double[] {scheduleCost, durationViolation, deadlineViolation, capacityViolation});
-
-                    //System.out.println("Size of vessel tour cache for vessel number " + vessel.getNumber() + " is: " + cachedVesselTours.get(vessel.getNumber()).size());
-                }
+                //System.out.println("Size of vessel tour cache for vessel number " + vessel.getNumber() + " is: " + cachedVesselTours.get(vessel.getNumber()).size());
             }
         }
 

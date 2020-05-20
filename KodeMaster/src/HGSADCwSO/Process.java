@@ -63,7 +63,7 @@ public class Process {
 
     public void evaluate(Individual individual) {
         fitnessEvaluationProtocol.evaluate(individual);
-        System.out.println("DAG:       " + individual.getPenalizedCost() + " " + individual.getCapacityViolation() + " " + individual.getDurationViolation() + " " + individual.getDeadlineViolation());
+        System.out.println("Violations: " + individual.getCapacityViolation() + " " + individual.getDurationViolation() + " " + individual.getDeadlineViolation());
     }
 
     public void repair(Individual individual) {
@@ -98,7 +98,27 @@ public class Process {
         survivorSelectionProtocol.selectSurvivors(subpopulation, otherSubpopulation, fitnessEvaluationProtocol);
     }
 
-
+    public void elite_training(Individual kid) { // TODO: Kuttt - gir ikke markant forbedring
+        System.out.println();
+        System.out.println("Welcome to the elite training programme!");
+        System.out.println();
+        int iterations_without_improvement = 0;
+        double penalized_cost = kid.getPenalizedCost();
+        while (iterations_without_improvement < 10) {
+            educate(kid);
+            if (kid.getPenalizedCost() < penalized_cost) {
+                iterations_without_improvement = 0;
+                penalized_cost = kid.getPenalizedCost();
+                System.out.println("New penalized cost: " + penalized_cost);
+            }
+            else {
+                iterations_without_improvement++;
+            }
+        }
+        System.out.println();
+        System.out.println("elite training over");
+        System.out.println();
+    }
 
     private void selectProtocols() {
         selectFitnessEvaluationProtocol();

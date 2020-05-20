@@ -29,89 +29,16 @@ public class EducationStandard implements EducationProtocol {
     @Override
     public void educate(Individual individual) { //TODO - klarer ikke å finne at B&L educater nye offspring med p^EDU?. Dette må såfall legges inn i main. Kan ikke ligge inni denne funksjonen da alle initielle individer skal educates
 
-        /*Random rand = new Random();
-        double randomNumber = rand.nextDouble();*/
-
-        //if (randomNumber > problemData.getHeuristicParameterDouble("Education rate")) {
-
-        boolean improvement = true;
-        counter = 0;
-        fitnessEvaluationProtocol.evaluate(individual);
-        double penalized_cost_before = individual.getPenalizedCost();
-        System.out.println(isRepair);
-        voyageReduction(individual);
-        fitnessEvaluationProtocol.evaluate(individual);
-        System.out.println("Counter after voyage reduction: " + counter + "    PC: " + individual.getPenalizedCost());
-        counter = 0;
-
-        // neighbourizeFriendlyInstallations(individual);
-        // System.out.println("Counter after neighbourize:     " + counter);
-        // counter = 0;
-
-        while (improvement) {
-
-            neighbourhoodSearch(individual);
-            fitnessEvaluationProtocol.evaluate(individual);
-            System.out.println("Counter after nhs:              " + counter + "    PC: " + individual.getPenalizedCost());
-            counter = 0;
-
-            inter_voyage_improvement(individual);
-            fitnessEvaluationProtocol.evaluate(individual);
-            System.out.println("Counter after inter voyage:     " + counter + "    PC: " + individual.getPenalizedCost());
-            counter = 0;
-
-            fitnessEvaluationProtocol.evaluate(individual);
-            double penalized_cost_after = individual.getPenalizedCost();
-
-            if (!(penalized_cost_before - penalized_cost_after > 0.1)) {
-                improvement = false;
-            }
-            penalized_cost_before = penalized_cost_after;
-        }
-        neighbourhoodSearch(individual);
-        fitnessEvaluationProtocol.evaluate(individual);
-        System.out.println("Counter after nhs:              " + counter + "    PC: " + individual.getPenalizedCost());
-
-        /*
-        System.out.println("EDUCATING!");
-        //Education:
-        fitnessEvaluationProtocol.evaluate(individual); //make sure costs are up to date before education. //TODO Fix potential bug
-        neighbourhoodSearch(individual);
-        //mergeVoyages(individual);
 
         fitnessEvaluationProtocol.evaluate(individual);
-        System.out.println("NS: " + individual.getPenalizedCost() + " | CV: " + individual.getCapacityViolation());
+        //System.out.println("Penalized cost before education: " + individual.getPenalizedCost());
 
-        voyageReduction(individual);
 
-        fitnessEvaluationProtocol.evaluate(individual);
-        System.out.println("PC: " + individual.getPenalizedCost() + " | CV: " + individual.getCapacityViolation());
-
+        new_inter_voyage_improvement(individual);
         neighbourhoodSearch(individual);
 
         fitnessEvaluationProtocol.evaluate(individual);
-        System.out.println("NS: " + individual.getPenalizedCost() + " | CV: " + individual.getCapacityViolation());
-
-        interVoyageMutation(individual);
-        neighbourhoodSearch(individual);
-
-        interVoyageMutation(individual);
-        neighbourhoodSearch(individual);
-
-        interVoyageMutation(individual);
-        neighbourhoodSearch(individual);
-
-        interVoyageMutation(individual);
-        neighbourhoodSearch(individual);
-
-
-        fitnessEvaluationProtocol.evaluate(individual);
-        System.out.println("PC: " + individual.getPenalizedCost() + " | CV: " + individual.getCapacityViolation());
-
-        counter = 0;
-        //}
-
-         */
+        //System.out.println("Penalized cost after education: " + individual.getPenalizedCost());
     }
 
 
@@ -141,7 +68,7 @@ public class EducationStandard implements EducationProtocol {
 
         counter ++;
     }
-
+    /*
     public void neighbourizeFriendlyInstallations(Individual individual){
         HashMap<Integer, ArrayList<Integer>> vesselTourChromosome = Utilities.deepCopyVesselTour(individual.getVesselTourChromosome());
         ArrayList<Pair<Integer, Integer>> zeroDistanceOrders = new ArrayList<>();
@@ -183,6 +110,8 @@ public class EducationStandard implements EducationProtocol {
         individual.setVesselTourChromosome(vesselTourChromosome);
     }
 
+
+     */
 
     private ArrayList<Integer> getImprovedVoyage(ArrayList<Integer> voyage, int vessel) {
         ArrayList<Integer> orders = new ArrayList<>(voyage);
@@ -268,19 +197,149 @@ public class EducationStandard implements EducationProtocol {
         return neighbours;
     }
 
-    public void inter_voyage_improvement(Individual individual){ //TODO This one does not currently work, find out why
+
+
+
+
+
+    public void new_inter_voyage_improvement(Individual individual) { //TODO still has problems finding improvements
+
+        HashMap<Integer, ArrayList<Integer>> chromosome_copy = Utilities.deepCopyVesselTour(individual.getVesselTourChromosome());
+        HashMap<Integer, ArrayList<Integer>> best_chromosome = chromosome_copy;
+        fitnessEvaluationProtocol.evaluate(individual);
+        counter++;
+        double cost_to_beat = individual.getPenalizedCost();
+
+        // Creating all results from a move
+
+        for (int remove_vessel_number = 0; remove_vessel_number < chromosome_copy.size(); remove_vessel_number++) {
+
+            if (chromosome_copy.get(remove_vessel_number).size() == 0) {
+                continue;
+            }
+
+            for (int remove_index = 0; remove_index < chromosome_copy.get(remove_vessel_number).size(); remove_index++) {
+
+                int order_number = chromosome_copy.get(remove_vessel_number).get(remove_index);
+
+                for (int insert_vessel_number = 0; insert_vessel_number < chromosome_copy.size() && insert_vessel_number != remove_vessel_number; insert_vessel_number ++) {
+
+                    for (int insertion_index = 0; insertion_index <= chromosome_copy.get(insert_vessel_number).size(); insertion_index++) {
+
+                        HashMap<Integer, ArrayList<Integer>> changed_chromosome_copy = Utilities.deepCopyVesselTour(chromosome_copy);
+
+                        changed_chromosome_copy.get(remove_vessel_number).remove(remove_index);
+                        changed_chromosome_copy.get(insert_vessel_number).add(insertion_index, order_number);
+
+                        Individual temp_individual = new Individual(changed_chromosome_copy, fitnessEvaluationProtocol);
+
+                        fitnessEvaluationProtocol.evaluate(temp_individual);
+                        double candidate_cost = temp_individual.getPenalizedCost();
+
+                        if (candidate_cost < cost_to_beat) {
+                            cost_to_beat = candidate_cost;
+                            best_chromosome = changed_chromosome_copy;
+                        }
+                    }
+                }
+            }
+        }
+        individual.setVesselTourChromosome(best_chromosome);
+    }
+
+    public void inter_voyage_improvement(Individual individual) { //TODO This one does not currently work, find out why
 
         // System.out.println("Before: " + individual.getVesselTourChromosome());
-        
-        HashMap<Integer, ArrayList<Integer>> chromosome = Utilities.deepCopyVesselTour(individual.getVesselTourChromosome());
+
+        HashMap<Integer, ArrayList<Integer>> chromosome_copy = Utilities.deepCopyVesselTour(individual.getVesselTourChromosome());
+
+        double cost_to_beat = individual.getPenalizedCost();
 
         // double costUnchangedChromosme = fitnessEvaluationProtocol.getPenalizedCostOfVoyage();
 
-        for (int vessel_number = 0; vessel_number < chromosome.size(); vessel_number++) {
+        ArrayList<Double> cost_reductions_from_removal = new ArrayList<>();
+        ArrayList<Integer> remove_indicies = new ArrayList<>();
+        ArrayList<Integer> remove_vessel_numbers = new ArrayList<>();
 
-            if (chromosome.get(vessel_number).size() == 0) {
+
+        for (int vessel_number = 0; vessel_number < chromosome_copy.size(); vessel_number++) {
+
+            if (chromosome_copy.get(vessel_number).size() == 0) {
                 continue;
             }
+
+            ArrayList<Integer> voyage_copy = chromosome_copy.get(vessel_number);
+            double cost_of_unchanged_voyage = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(voyage_copy, vessel_number);
+            counter++;
+
+            for (int index_of_order_to_be_removed = 0; index_of_order_to_be_removed < voyage_copy.size(); index_of_order_to_be_removed++) {
+                ArrayList<Integer> reduced_voyage = new ArrayList<>(voyage_copy);
+                reduced_voyage.remove(index_of_order_to_be_removed);
+                double cost_of_reduced_voyage = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(reduced_voyage, vessel_number);
+                counter++;
+
+                double cost_reduction = Math.max(0, cost_of_reduced_voyage - cost_of_unchanged_voyage);
+
+                cost_reductions_from_removal.add(cost_reduction);
+                remove_indicies.add(index_of_order_to_be_removed);
+                remove_vessel_numbers.add(vessel_number);
+            }
+        }
+
+        ArrayList<Double> removal_probabilities = Utilities.normalize(cost_reductions_from_removal);
+
+        int index_of_remove_decision = Utilities.getRandomElementFromDistribution(removal_probabilities);
+        int remove_decision_vessel = remove_vessel_numbers.get(index_of_remove_decision);
+        int remove_decision_index = remove_indicies.get(index_of_remove_decision);
+        int number_of_removed_order = chromosome_copy.get(remove_decision_vessel).get(remove_decision_index);
+
+        HashMap<Integer, ArrayList<Integer>> reduced_chromosome_copy = Utilities.deepCopyVesselTour(chromosome_copy);
+        reduced_chromosome_copy.get(remove_decision_vessel).remove(remove_decision_index);
+
+        ArrayList<Double> total_cost_reductions_from_move = new ArrayList<>();
+        ArrayList<Individual> changed_individuals = new ArrayList<>();
+
+        boolean found_improvement = false;
+
+        for (int second_vessel_number = 0; second_vessel_number < chromosome_copy.size(); second_vessel_number++) {
+
+            if (chromosome_copy.get(second_vessel_number).size() == 0) {
+                continue;
+            }
+
+            for (int second_index = 0; second_index <= reduced_chromosome_copy.get(second_vessel_number).size(); second_index++) {
+
+                HashMap<Integer, ArrayList<Integer>> changed_chromosome_copy = Utilities.deepCopyVesselTour(reduced_chromosome_copy);
+                changed_chromosome_copy.get(second_vessel_number).add(second_index, number_of_removed_order);
+
+                Individual temporary_individual = new Individual(changed_chromosome_copy, fitnessEvaluationProtocol);
+                fitnessEvaluationProtocol.evaluate(temporary_individual);
+                counter++;
+                double changed_chromosome_cost = temporary_individual.getPenalizedCost();
+                double total_cost_reduction_from_move = Math.max(0, cost_to_beat - changed_chromosome_cost);
+
+                if (total_cost_reduction_from_move > 0) {
+                    found_improvement = true;
+                }
+
+                total_cost_reductions_from_move.add(total_cost_reduction_from_move);
+                changed_individuals.add(temporary_individual);
+            }
+        }
+
+        if (found_improvement){
+            ArrayList<Double> second_probabilities = Utilities.normalize(total_cost_reductions_from_move);
+            int second_decision_index = deterministic_search ? Utilities.getBestElementFromDistribution(second_probabilities) : Utilities.getRandomElementFromDistribution(second_probabilities);
+            Individual improved_individual = changed_individuals.get(second_decision_index);
+            HashMap<Integer, ArrayList<Integer>> improved_chromosome = Utilities.deepCopyVesselTour(improved_individual.getVesselTourChromosome());
+            individual.setVesselTourChromosome(improved_chromosome);
+        }
+    }
+
+
+
+/*
+
 
             double cost_of_unchanged_voyage = fitnessEvaluationProtocol.getPenalizedCostOfVoyage(chromosome.get(vessel_number), vessel_number);
             counter++;
@@ -395,12 +454,20 @@ public class EducationStandard implements EducationProtocol {
         if (found_improvement) {
             System.out.println(total_cost_reductions_from_move);
             ArrayList<Double> second_probabilities = Utilities.normalize(total_cost_reductions_from_move);
-            int chosen_move_index = Utilities.getRandomElementFromDistribution(second_probabilities);
+            int chosen_move_index;
+            if (deterministic_search) {
+                chosen_move_index = Utilities.getBestElementFromDistribution(second_probabilities);
+            }
+            else {
+                chosen_move_index = Utilities.getRandomElementFromDistribution(second_probabilities);
+            }
             return new int[] {move_index.get(chosen_move_index), move_vessel.get(chosen_move_index)};
         }
         return new int[] {-1, -1};
     }
 
+
+ */
     /*
 
     private void intra_voyage_improvement(Individual individual) {
@@ -442,6 +509,7 @@ public class EducationStandard implements EducationProtocol {
     
      */
 
+    /*
 
     public void mergeVoyages(Individual individual) {
 
@@ -500,6 +568,8 @@ public class EducationStandard implements EducationProtocol {
         }
     }
 
+     */
+
 
     protected VoyageInsertion getBestInsertionIntoVoyage(Integer vesselTakingOverOrder, Order order, ArrayList<Integer> voyageToMergeInto) { //TESTET OG FUNKER
 
@@ -532,7 +602,7 @@ public class EducationStandard implements EducationProtocol {
         for (Integer voyage : vesselTourChromosome.keySet()) {//if the insertion cost is the same for many voyages, then the order is put into the first voyage with this insertion cost
             if (!voyage.equals(forbiddenVoyageToInsertInto) && vesselTourChromosome.get(voyage).size() != 0) {
                 VoyageInsertion currentVoyage = getBestInsertionIntoVoyage(voyage, order, vesselTour.get(voyage));
-                if (currentVoyage.getInsertionCost() < bestInsertionCost) {
+                if (currentVoyage.getInsertionCost() <= bestInsertionCost) {
                     bestInsertionCost = currentVoyage.getInsertionCost();
                     bestVoyageInsertion = currentVoyage;
                 }

@@ -10,9 +10,9 @@ public class HackInitProblemData {
 
         HashMap<String, String> problemInstanceParameters = new HashMap<String, String>();
 
-        problemInstanceParameters.put("fuel price","7.1");
-        problemInstanceParameters.put("Servicing consumption","0,4");
-        problemInstanceParameters.put("Idling consumption","0,25");
+        problemInstanceParameters.put("Fuel price","275,5"); //Price per tonne
+        problemInstanceParameters.put("Servicing consumption","170");
+        problemInstanceParameters.put("Idling consumption","120");
         problemInstanceParameters.put("Max speed","14,0");
         problemInstanceParameters.put("Min speed","7,0");
         problemInstanceParameters.put("Impact on sailing from weather state 2","2,0");
@@ -54,7 +54,7 @@ public class HackInitProblemData {
         heuristicInstanceParameters.put("Factor to increase penalties with", "1,2");
         heuristicInstanceParameters.put("Factor to decrease penalties with", "0,85");
 
-        heuristicInstanceParameters.put("Capacity constraint violation penalty", "5000"); //TODO - sett en god verdi
+        heuristicInstanceParameters.put("Capacity constraint violation penalty", "10000"); //TODO - sett en god verdi
         heuristicInstanceParameters.put("Duration constraint violation penalty", "500"); //TODO - sett en god verdi
         heuristicInstanceParameters.put("Deadline constraint violation penalty", "200");
 
@@ -79,8 +79,8 @@ public class HackInitProblemData {
         ArrayList<Vessel> vessels = new ArrayList<Vessel>();
 
         vessels.add(new Vessel("PSV1", 100, 7, 14, 0, 0, 3));
-        vessels.add(new Vessel("PSV2", 100, 7, 14, 0, 1, 2));
-        vessels.add(new Vessel("PSV3", 100, 7, 14, 0, 2, 3));
+        // vessels.add(new Vessel("PSV2", 100, 7, 14, 0, 1, 2));
+        // vessels.add(new Vessel("PSV3", 100, 7, 14, 0, 2, 3));
 
 
         /*
@@ -93,53 +93,57 @@ public class HackInitProblemData {
 
         ArrayList<Installation> installations = new ArrayList<Installation>();
 
-        installations.add(new Installation("DEP", 0,23, 0));
+        installations.add(new Installation("DEP", 0,24, 0));
         installations.add(new Installation("TRO", 7,19, 1));
         installations.add(new Installation("TRB", 7,19, 2));
         installations.add(new Installation("TRC", 7,19, 3));
-        installations.add(new Installation("CPR", 0,23, 4));
-        installations.add(new Installation("SEN", 0,23, 5));
-        installations.add(new Installation("SDO", 0,23, 6));
-        installations.add(new Installation("SEQ", 0,23, 7));
-        installations.add(new Installation("OSE", 0,23, 8));
-        installations.add(new Installation("OSB", 0,23, 9));
-        installations.add(new Installation("OSC", 0,23, 10));
-        installations.add(new Installation("OSO", 0,23, 11));
-        installations.add(new Installation("SSC", 0,23, 12));
-        installations.add(new Installation("OSS", 0,23, 13));
-        installations.add(new Installation("DSD", 0,23, 14));
-        installations.add(new Installation("KVB", 0,23, 15));
-        installations.add(new Installation("VMO", 0,23, 16));
-        installations.add(new Installation("WEL", 0,23, 17));
-        installations.add(new Installation("VFB", 0,23, 18));
-        installations.add(new Installation("WEP", 0,23, 19));
-        installations.add(new Installation("HUL", 0,23, 20));
+        installations.add(new Installation("CPR", 0,24, 4));
+        installations.add(new Installation("SEN", 0,24, 5));
+        installations.add(new Installation("SDO", 0,24, 6));
+        installations.add(new Installation("SEQ", 0,24, 7));
+        installations.add(new Installation("OSE", 0,24, 8));
+        installations.add(new Installation("OSB", 0,24, 9));
+        installations.add(new Installation("OSC", 0,24, 10));
+        installations.add(new Installation("OSO", 0,24, 11));
+        installations.add(new Installation("SSC", 0,24, 12));
+        installations.add(new Installation("OSS", 0,24, 13));
+        installations.add(new Installation("DSD", 0,24, 14));
+        installations.add(new Installation("KVB", 0,24, 15));
+        installations.add(new Installation("VMO", 0,24, 16));
+        installations.add(new Installation("WEL", 0,24, 17));
+        installations.add(new Installation("VFB", 0,24, 18));
+        installations.add(new Installation("WEP", 0,24, 19));
+        installations.add(new Installation("HUL", 0,24, 20));
         installations.add(new Installation("STA", 7,19, 21));
-        installations.add(new Installation("STB", 0,23, 22));
-        installations.add(new Installation("STC", 0,23, 23));
-        installations.add(new Installation("GFA", 0,23, 24));
-        installations.add(new Installation("GFB", 0,23, 25));
-        installations.add(new Installation("GFC", 0,23, 26));
-        installations.add(new Installation("SOD", 0,23, 27));
+        installations.add(new Installation("STB", 0,24, 22));
+        installations.add(new Installation("STC", 0,24, 23));
+        installations.add(new Installation("GFA", 0,24, 24));
+        installations.add(new Installation("GFB", 0,24, 25));
+        installations.add(new Installation("GFC", 0,24, 26));
+        installations.add(new Installation("SOD", 0,24, 27));
         ArrayList<Order> orders = new ArrayList<Order>();
 
         orders.add(new Order(17,0, installations.get(4),1, 3));
+        /*
         orders.add(new Order(11,0, installations.get(16),2, 3));
         orders.add(new Order(28,0, installations.get(11),3, 3));
         orders.add(new Order(5,0, installations.get(17),4, 3));
         orders.add(new Order(30,0, installations.get(20),5, 3));
-        orders.add(new Order(14,0, installations.get(21),6, 3));
-        orders.add(new Order(18,0, installations.get(26),7, 3));
-        orders.add(new Order(22,0, installations.get(9), 8, 3));
-        orders.add(new Order(15,0, installations.get(1), 9, 3));
+        orders.add(new Order(14,0, installations.get(21),6, 2));
+        orders.add(new Order(18,0, installations.get(26),7, 2));
+        orders.add(new Order(22,0, installations.get(9), 8, 2));
+        orders.add(new Order(15,0, installations.get(1), 9, 2));
+
         orders.add(new Order(18,0, installations.get(2),10, 3));
         orders.add(new Order(19,0, installations.get(3),11, 3));
         orders.add(new Order(20,0, installations.get(22),12, 3));
         orders.add(new Order(26,0, installations.get(12),13, 3));
         orders.add(new Order(4,0, installations.get(13),14, 3));
         orders.add(new Order(20,0, installations.get(18),15, 3));
-        orders.add(new Order(8,0, installations.get(15),16, 3));
+        orders.add(new Order(8,0, installations.get(15),16, 1));
 
+
+         */
 
         HashMap<Installation, HashMap<Installation, Double>> distances = new HashMap<Installation, HashMap<Installation, Double>>();
 
@@ -180,7 +184,7 @@ public class HackInitProblemData {
             }
         }
 
-        ArrayList<Integer> weatherStatesByHour = new ArrayList<Integer>(Arrays.asList(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2));
+        ArrayList<Integer> weatherStatesByHour = new ArrayList<Integer>(Arrays.asList(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2));
 
         HashMap<Integer, Double> weatherImpactByState = new HashMap<Integer, Double>();
         weatherImpactByState.put(0, 1.0);

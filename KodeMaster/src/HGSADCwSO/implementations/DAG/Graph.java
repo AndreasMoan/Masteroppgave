@@ -78,7 +78,7 @@ public class Graph {
             graph.put(i, new HashMap<Integer, Node>());
         }
 
-        graph.get(0).put(0, new Node(0,0, 0));
+        graph.get(0).put(0, new Node( 16 * (int) multiplier ,0, 0));
         graph.get(0).get(0).setBestCost(0);
         graph.get(0).get(0).setBestPenalizedCost(0);
 
@@ -99,6 +99,8 @@ public class Graph {
 
     private void buildEdgesFromNode(Node node, int destinationOrderNumber, int legNumber) {
 
+        System.out.println("Creating edges from time: " + node.getTime());
+
 
         double distance = problemData.getDistanceByIndex(problemData.getInstallationNumberByOrderNumber(node.getOrderNumber()),problemData.getInstallationNumberByOrderNumber(destinationOrderNumber));
 
@@ -110,6 +112,7 @@ public class Graph {
 
         int earliestTheoreticalEndTime = nodeStartTime + (int) ceil((distance/maxSpeed + problemData.getDemandByOrderNumber(destinationOrderNumber)*timePerHiv)*multiplier);
         int latestTheoreticalEndTime = nodeStartTime + (int) ceil((distance/minSpeed + problemData.getDemandByOrderNumber(destinationOrderNumber)*timePerHiv)*multiplier);
+        System.out.println("a " + earliestTheoreticalEndTime + " " + latestTheoreticalEndTime);
 
         int finServicingTime = earliestTheoreticalEndTime;
 
@@ -118,10 +121,15 @@ public class Graph {
 
             finServicingTime = getEarliestFeasibleSercivingFinishingTime(finServicingTime , destinationOrderNumber, 0);
 
+            System.out.println("b " + finServicingTime);
+
             double[] serviceInfo = servicingCalculations(finServicingTime, destinationOrderNumber);
 
             double servicingCost = serviceInfo[0];
             double real_fin_idling_time = serviceInfo[1];
+
+            System.out.println("c " + servicingCost);
+            System.out.println("d " + real_fin_idling_time);
 
             if (!isArrivalPossible(realStartTime, distance, real_fin_idling_time)) {
                 finServicingTime++;
@@ -133,11 +141,19 @@ public class Graph {
             double idlingCost = idlingInfo[0];
             double real_fin_sailing_time = idlingInfo[1];
 
-            double[] timeInAllWeatherStates = getTimeInAllWS(realStartTime, real_fin_sailing_time);
+            System.out.println("e " + idlingCost);
+            System.out.println("f " + real_fin_sailing_time);
 
-            double adjustedAverageSpeed = calculateAdjustedAverageSpeed(timeInAllWeatherStates, distance);
+            double sailingCost = 0;
 
-            double sailingCost = sailingCalculations(timeInAllWeatherStates, adjustedAverageSpeed);
+            if (distance != 0) {
+                double[] timeInAllWeatherStates = getTimeInAllWS(realStartTime, real_fin_sailing_time);
+                System.out.println("g " + timeInAllWeatherStates[0] + " " + timeInAllWeatherStates[1] + " " + timeInAllWeatherStates[2] + " " + timeInAllWeatherStates[3]);
+                double adjustedAverageSpeed = calculateAdjustedAverageSpeed(timeInAllWeatherStates, distance);
+                System.out.println("h " + adjustedAverageSpeed);
+                sailingCost = (real_fin_sailing_time == realStartTime) ? 0 : sailingCalculations(timeInAllWeatherStates, adjustedAverageSpeed);
+            }
+
 
             Node childNode;
 
@@ -153,13 +169,16 @@ public class Graph {
                 graph.get(legNumber + 1).put(finServicingTime, childNode);
             }
 
-            double edgeCost = sailingCost + idlingCost + servicingCost;
+            double total_consumption_tonnes = (sailingCost + idlingCost + servicingCost)/1000;
+            double total_fuel_cost = total_consumption_tonnes * problemData.getProblemInstanceParameterDouble("Fuel price");
+
+            System.out.println("i " + total_fuel_cost);
 
             // System.out.println("Fin servicing time: " + finServicingTime);
 
             // System.out.println("EDGE COST IS EQUAL TO: " + edgeCost);
 
-            Edge currEdge = new Edge(node, childNode, edgeCost);
+            Edge currEdge = new Edge(node, childNode, total_fuel_cost);
 
             childNode.addParentEdge(currEdge);
             node.addChildEdge(currEdge);
@@ -331,7 +350,7 @@ public class Graph {
         double durationWS01 = timeInAllWeatherStates[0] + timeInAllWeatherStates[1];
         double duration = durationWS01 + durationWS2 + durationWS3;
 
-        double speed = distance/(duration);
+        double speed = distance/duration;
 
         if (durationWS01 == 0 && speed > (durationWS2*maxSpeedWS2 + durationWS3*maxSpeedWS3)/(durationWS2 + durationWS3)) {
             speed = maxSpeed+1;
@@ -352,14 +371,14 @@ public class Graph {
 
     private double sailingCalculations(double[] timeInAllWeatherStates, double adjustedAverageSpeed) {
         double cost = 0;
-        cost += (timeInAllWeatherStates[0] + timeInAllWeatherStates[1])*consumptionFunction(adjustedAverageSpeed);
-        cost += (adjustedAverageSpeed < maxSpeedWS2) ? timeInAllWeatherStates[2]*consumptionFunction(adjustedAverageSpeed + speedImpactWS2) : timeInAllWeatherStates[1]*consumptionFunction(maxSpeed);
-        cost += (adjustedAverageSpeed < maxSpeedWS3) ? timeInAllWeatherStates[3]*consumptionFunction(adjustedAverageSpeed + speedImpactWS3) : timeInAllWeatherStates[2]*consumptionFunction(maxSpeed);
+        cost += (timeInAllWeatherStates[0] + timeInAllWeatherStates[1])*consumption_per_hour_at_speed(adjustedAverageSpeed);
+        cost += (adjustedAverageSpeed < maxSpeedWS2) ? timeInAllWeatherStates[2]*consumption_per_hour_at_speed(adjustedAverageSpeed + speedImpactWS2) : timeInAllWeatherStates[1]*consumption_per_hour_at_speed(maxSpeed);
+        cost += (adjustedAverageSpeed < maxSpeedWS3) ? timeInAllWeatherStates[3]*consumption_per_hour_at_speed(adjustedAverageSpeed + speedImpactWS3) : timeInAllWeatherStates[2]*consumption_per_hour_at_speed(maxSpeed);
         return cost;
     }
 
-    private double consumptionFunction(double speed) {
-        return (0.8125*speed*speed-13.00*speed+72.75);
+    private double consumption_per_hour_at_speed(double speed) {
+        return 11.111*speed*speed - 177.78*speed + 1011.1;
     }
 
     private boolean isNodeInGraph(int columnNumber, int finServicingTime) {

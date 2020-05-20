@@ -97,7 +97,7 @@ public class FitnessEvaluationBaseline implements FitnessEvaluationProtocol {
         HashMap<Individual, Double> individualHammingDistances = new HashMap<Individual, Double>();
         for (Individual existingIndividual : hammingDistances.keySet()){
             HashMap<Individual, Double> existingIndividualDistances = hammingDistances.get(existingIndividual);
-            double normalizedHammingDistance = getNormalizedHammingDistance(individual, existingIndividual);
+            double normalizedHammingDistance = get_normalized_hamming_distance(individual, existingIndividual);
             existingIndividualDistances.put(individual, normalizedHammingDistance);
             individualHammingDistances.put(existingIndividual, normalizedHammingDistance);
             hammingDistances.put(existingIndividual, existingIndividualDistances);
@@ -111,6 +111,46 @@ public class FitnessEvaluationBaseline implements FitnessEvaluationProtocol {
             hammingDistances.get(otherIndividual).remove(individual);
         }
     }
+
+    public double get_normalized_hamming_distance(Individual individual_1, Individual individual_2) {
+        HashMap<Integer, ArrayList<Integer>> chromosome_1 = Utilities.deepCopyVesselTour(individual_1.getVesselTourChromosome());
+        HashMap<Integer, ArrayList<Integer>> chromosome_2 = Utilities.deepCopyVesselTour(individual_2.getVesselTourChromosome());
+        int differance = 0;
+        for (int vessel_number = 0; vessel_number < chromosome_1.size(); vessel_number++) {
+            ArrayList<Integer> voyage_1_with_depot = chromosome_1.get(vessel_number);
+            ArrayList<Integer> voyage_2_with_depot = chromosome_2.get(vessel_number);
+            voyage_1_with_depot.add(0,0);
+            voyage_2_with_depot.add(0,0);
+            voyage_1_with_depot.add(0);
+            voyage_2_with_depot.add(0);
+        }
+        for (int vessel_number_1 = 0; vessel_number_1 < chromosome_1.size(); vessel_number_1++) {
+            for (int index_1 = 0; index_1 < chromosome_1.get(vessel_number_1).size() - 1; index_1 ++){
+
+                int a = chromosome_1.get(vessel_number_1).get(index_1);
+                int b = chromosome_1.get(vessel_number_1).get(index_1 + 1);
+                boolean match = false;
+
+                outerloop:
+                for (int vessel_number_2 = 0; vessel_number_2 < chromosome_2.size(); vessel_number_2 ++) {
+                    for (int index_2 = 0; index_2 < chromosome_2.get(vessel_number_2).size() - 1; index_2 ++ ) {
+
+                        int c = chromosome_2.get(vessel_number_2).get(index_2);
+                        int d = chromosome_2.get(vessel_number_2).get(index_2 + 1);
+
+                        if (a == c && b == d) {
+                            match = true;
+                            break outerloop;
+                        }
+                    }
+                }
+                differance += match ? 0 : 1;
+            }
+        }
+        int number_of_vessels = chromosome_1.size();
+        return differance /(numberOfOrders + number_of_vessels);
+    }
+
 
     public double getNormalizedHammingDistance(Individual individual1, Individual individual2) { //The normalized Hamming distance counts the number of orders that are delivered with different PSVs.
         HashMap<Integer, ArrayList<Integer>> chromosome1 = individual1.getVesselTourChromosome();
