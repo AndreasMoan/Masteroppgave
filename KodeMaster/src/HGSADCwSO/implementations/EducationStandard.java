@@ -594,7 +594,7 @@ public class EducationStandard implements EducationProtocol {
     }
 
 
-    protected Pair<Integer, Integer> getCheapestVoyageAndPositionToInsertAnOrderTo(Order order, HashMap<Integer, ArrayList<Integer>> vesselTourChromosome, Integer forbiddenVoyageToInsertInto){
+    protected Integer[] getCheapestVoyageAndPositionToInsertAnOrderTo(Order order, HashMap<Integer, ArrayList<Integer>> vesselTourChromosome, Integer forbiddenVoyageToInsertInto){
         HashMap<Integer, ArrayList<Integer>> vesselTour = Utilities.deepCopyVesselTour(vesselTourChromosome);
         double bestInsertionCost = Double.MAX_VALUE;
         VoyageInsertion bestVoyageInsertion = null;
@@ -608,7 +608,7 @@ public class EducationStandard implements EducationProtocol {
                 }
             }
         }
-        return new Pair<>(bestVoyageInsertion.getVessel(), bestVoyageInsertion.getPositionInVoyageToInsertInto());
+        return new Integer[]{bestVoyageInsertion.getVessel(), bestVoyageInsertion.getPositionInVoyageToInsertInto()};
     } //.getVessel() may give nullptrexception because bestVoyageInsertion will always be assigned a value. Best insertionCost is never max_value
 
 
@@ -630,8 +630,7 @@ public class EducationStandard implements EducationProtocol {
         if (countVoyagesDeparting > 1) {
 
             //  3.	Find the shortest voyage in the individual. If there exist more than one of the shortest voyage, chose the one with highest penalized cost to be removed from the individual.
-            Pair<Integer, ArrayList<Integer>> voyageNumberAndSequenceToBeTerminated = selectVoyageAndSequenceToRemoveFromChromosome(individual);
-            Integer voyageToRemove = voyageNumberAndSequenceToBeTerminated.getKey();
+            Integer voyageToRemove = selectVoyageAndSequenceToRemoveFromChromosome(individual);
 
             //  4.	Remove the orders from the chromosome and put them in a separate list
             ArrayList<Integer> ordersToReallocateIntFormat = new ArrayList<>();
@@ -662,7 +661,7 @@ public class EducationStandard implements EducationProtocol {
             //  6.	For each order in the list of orders that has to be reallocated
             //      a.	Find the least cost insertion for the order into the other voyages in the individual. Assign the order to the voyage that has the cheapest insertion and delete from the ordersToReallocate-list
             for (Order order : ordersToReallocateOrderFormatSorted) {
-                Pair<Integer, Integer> cheapestVoyageAndPositionToInsertAnOrderTo = getCheapestVoyageAndPositionToInsertAnOrderTo(order, modifiedChromosome, voyageToRemove); //TODO - legg på "if getcheapestvoy.... is not null...
+                Integer[] cheapestVoyageAndPositionToInsertAnOrderTo = getCheapestVoyageAndPositionToInsertAnOrderTo(order, modifiedChromosome, voyageToRemove); //TODO - legg på "if getcheapestvoy.... is not null...
 
                 Integer insertOrderInVoyageNumber = cheapestVoyageAndPositionToInsertAnOrderTo.getKey();
                 Integer insertAtPositionInVoyage = cheapestVoyageAndPositionToInsertAnOrderTo.getValue();
@@ -686,7 +685,7 @@ public class EducationStandard implements EducationProtocol {
     }
 
 
-    protected Pair<Integer, ArrayList<Integer>> selectVoyageAndSequenceToRemoveFromChromosome(Individual individual){
+    protected Integer selectVoyageAndSequenceToRemoveFromChromosome(Individual individual){
         // Find the shortest voyage in the individual. If there exist more than one of the shortest voyage, chose the one with highest penalized cost to be removed from the individual.
         Individual modifiedIndividual = new Individual (Utilities.deepCopyVesselTour(individual.getVesselTourChromosome()), fitnessEvaluationProtocol);
         HashMap<Integer, ArrayList<Integer>> modifiedChromosome = new HashMap<>(modifiedIndividual.getVesselTourChromosome());
@@ -734,7 +733,7 @@ public class EducationStandard implements EducationProtocol {
             voyageSequenceToBeTerminated = shortestVoyages.get(voyageToBeTerminated);
         }
 
-        return new Pair<> (voyageToBeTerminated, voyageSequenceToBeTerminated);
+        return voyageToBeTerminated;
     }
 
 //************************* NOT USED ****************************
