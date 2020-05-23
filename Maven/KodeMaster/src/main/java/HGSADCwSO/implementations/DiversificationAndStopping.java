@@ -1,7 +1,7 @@
-package HGSADCwSO.implementations;
+package main.java.HGSADCwSO.implementations;
 
-import HGSADCwSO.files.ProblemData;
-import HGSADCwSO.protocols.DiversificationProtocol;
+import main.java.HGSADCwSO.files.ProblemData;
+import main.java.HGSADCwSO.protocols.DiversificationProtocol;
 
 import java.util.ArrayList;
 

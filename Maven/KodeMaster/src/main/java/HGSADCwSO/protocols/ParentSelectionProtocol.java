@@ -1,7 +1,7 @@
-package HGSADCwSO.protocols;
+package main.java.HGSADCwSO.protocols;
 
 
-import HGSADCwSO.files.Individual;
+import main.java.HGSADCwSO.files.Individual;
 
 import java.util.ArrayList;
 

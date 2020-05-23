@@ -1,4 +1,4 @@
-package HGSADCwSO.files;
+package main.java.HGSADCwSO.files;
 
 public class Vessel {
 

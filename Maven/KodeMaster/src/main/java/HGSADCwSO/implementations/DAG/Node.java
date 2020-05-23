@@ -1,4 +1,4 @@
-package HGSADCwSO.implementations.DAG;
+package main.java.HGSADCwSO.implementations.DAG;
 
 import java.util.ArrayList;
 

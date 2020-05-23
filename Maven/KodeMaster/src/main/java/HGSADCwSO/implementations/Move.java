@@ -1,4 +1,4 @@
-package HGSADCwSO.implementations;
+package main.java.HGSADCwSO.implementations;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;

@@ -1,6 +1,6 @@
-package HGSADCwSO.files;
+package main.java.HGSADCwSO.files;
 
-import HGSADCwSO.protocols.FitnessEvaluationProtocol;
+import main.java.HGSADCwSO.protocols.FitnessEvaluationProtocol;
 
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package HGSADCwSO.files;
+package main.java.HGSADCwSO.files;
 
 import java.util.ArrayList;
 import java.util.HashMap;

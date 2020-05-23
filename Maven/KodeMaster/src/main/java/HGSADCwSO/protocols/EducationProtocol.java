@@ -1,6 +1,6 @@
-package HGSADCwSO.protocols;
+package main.java.HGSADCwSO.protocols;
 
-import HGSADCwSO.files.Individual;
+import main.java.HGSADCwSO.files.Individual;
 
 public interface EducationProtocol {
 

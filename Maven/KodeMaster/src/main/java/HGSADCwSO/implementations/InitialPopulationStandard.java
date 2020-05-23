@@ -1,10 +1,10 @@
-package HGSADCwSO.implementations;
+package main.java.HGSADCwSO.implementations;
 
-import HGSADCwSO.files.Individual;
-import HGSADCwSO.files.Order;
-import HGSADCwSO.files.ProblemData;
-import HGSADCwSO.protocols.FitnessEvaluationProtocol;
-import HGSADCwSO.protocols.InitialPopulationProtocol;
+import main.java.HGSADCwSO.files.Individual;
+import main.java.HGSADCwSO.files.Order;
+import main.java.HGSADCwSO.files.ProblemData;
+import main.java.HGSADCwSO.protocols.FitnessEvaluationProtocol;
+import main.java.HGSADCwSO.protocols.InitialPopulationProtocol;
 
 import java.util.*;
 
@@ -43,9 +43,9 @@ public class InitialPopulationStandard implements InitialPopulationProtocol {
         }
 
         int n = 1;
-        while (n < problemData.getNumberOfOrders() && orders.get(n).getDay() == 0) {
+        while (n <= problemData.getNumberOfOrders() && orders.get(n).getDay() == 0) {
             int randomVessel = new Random().nextInt(problemData.getNumberOfVessels());
-            vesselOrderChromosome.get(randomVessel).add(n);
+            vesselOrderChromosome.get(randomVessel).add(orders.get(n).getNumber());
             n++;
         }
         return vesselOrderChromosome;

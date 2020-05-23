@@ -1,9 +1,9 @@
-package HGSADCwSO.implementations;
+package main.java.HGSADCwSO.implementations;
 
-import HGSADCwSO.files.Individual;
-import HGSADCwSO.files.ProblemData;
-import HGSADCwSO.files.Utilities;
-import HGSADCwSO.protocols.FitnessEvaluationProtocol;
+import main.java.HGSADCwSO.files.Individual;
+import main.java.HGSADCwSO.files.ProblemData;
+import main.java.HGSADCwSO.files.Utilities;
+import main.java.HGSADCwSO.protocols.FitnessEvaluationProtocol;
 
 import java.util.ArrayList;
 import java.util.Collections;

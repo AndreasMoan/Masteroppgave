@@ -1,8 +1,8 @@
-package HGSADCwSO.files;
+package main.java.HGSADCwSO.files;
 
-import HGSADCwSO.implementations.*;
-import HGSADCwSO.implementations.DAG.FitnessEvaluationDAG;
-import HGSADCwSO.protocols.*;
+import main.java.HGSADCwSO.implementations.*;
+import main.java.HGSADCwSO.implementations.DAG.FitnessEvaluationDAG;
+import main.java.HGSADCwSO.protocols.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;

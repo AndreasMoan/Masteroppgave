@@ -1,4 +1,4 @@
-package HGSADCwSO.files;
+package main.java.HGSADCwSO.files;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;

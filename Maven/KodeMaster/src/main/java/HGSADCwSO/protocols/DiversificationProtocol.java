@@ -1,4 +1,4 @@
-package HGSADCwSO.protocols;
+package main.java.HGSADCwSO.protocols;
 
 import java.util.ArrayList;
 

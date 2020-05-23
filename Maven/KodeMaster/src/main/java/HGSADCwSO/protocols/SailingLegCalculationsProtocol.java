@@ -1,4 +1,4 @@
-package HGSADCwSO.protocols;
+package main.java.HGSADCwSO.protocols;
 
 public interface SailingLegCalculationsProtocol {
 

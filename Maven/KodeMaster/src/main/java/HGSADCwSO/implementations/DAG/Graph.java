@@ -1,7 +1,7 @@
-package HGSADCwSO.implementations.DAG;
+package main.java.HGSADCwSO.implementations.DAG;
 
-import HGSADCwSO.files.Order;
-import HGSADCwSO.files.ProblemData;
+import main.java.HGSADCwSO.files.Order;
+import main.java.HGSADCwSO.files.ProblemData;
 
 import java.util.ArrayList;
 import java.util.HashMap;

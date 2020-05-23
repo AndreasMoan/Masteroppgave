@@ -1,7 +1,7 @@
-package HGSADCwSO.implementations;
+package main.java.HGSADCwSO.implementations;
 
-import HGSADCwSO.files.ProblemData;
-import HGSADCwSO.protocols.SailingLegCalculationsProtocol;
+import main.java.HGSADCwSO.files.ProblemData;
+import main.java.HGSADCwSO.protocols.SailingLegCalculationsProtocol;
 
 public class SailingLegCalculationsQuickAndDirty implements SailingLegCalculationsProtocol {
 

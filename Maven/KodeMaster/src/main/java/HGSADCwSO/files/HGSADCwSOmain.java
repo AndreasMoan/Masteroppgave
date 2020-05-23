@@ -1,7 +1,7 @@
-package HGSADCwSO.files;
+package main.java.HGSADCwSO.files;
 
 
-import HGSADCwSO.protocols.FitnessEvaluationProtocol;
+import main.java.HGSADCwSO.protocols.FitnessEvaluationProtocol;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -94,16 +94,9 @@ public class HGSADCwSOmain {
 
         Individual kid;
 
-        if (new Random().nextDouble() < mutationChance) {
-            kid = process.cloneGoodIndividual(feasiblePopulation,infeasiblePopulation);
-            process.mutate(kid);
-            process.mutate(kid);
-            process.mutate(kid);
-        }
-        else {
-            ArrayList<Individual> parents = process.selectParents(feasiblePopulation, infeasiblePopulation);
-            kid = process.mate(parents);
-        }
+        ArrayList<Individual> parents = process.selectParents(feasiblePopulation, infeasiblePopulation);
+        kid = process.mate(parents);
+
         return kid;
     }
 
@@ -115,16 +108,12 @@ public class HGSADCwSOmain {
         process.repair(kid);
         boolean isImprovingSolution = addToSubpopulation(kid);
         System.out.println("FSP size: " + feasiblePopulation.size() + " IFSP size: " + infeasiblePopulation.size());
-        if (kid.getPenalizedCost() < bestCost*1.05) {
-            process.elite_training(kid);
-        }
-
         if (kid.getPenalizedCost() < bestCost) {
             bestCost = kid.getPenalizedCost();
             scheduleCost = kid.getScheduleCost();
         }
         System.out.println("Iteration " + iteration + ",      Chromosome: " + kid.getVesselTourChromosome() + ", this cost: " + kid.getPenalizedCost() + ",      Best cost thus far: " + bestCost + "     " + bestFeasibleIndividual.getVesselTourChromosome());
-        System.out.println();
+        System.out.println("isImpovingSolution: " + isImprovingSolution);
         process.updateIterationsSinceImprovementCounter(isImprovingSolution);
         process.adjustPenaltyParameters(feasiblePopulation, infeasiblePopulation);
 
@@ -167,19 +156,18 @@ public class HGSADCwSOmain {
         process.updatePenaltyAdjustmentCounter(kid);
         boolean isImprovingSolution = false;
         process.evaluate(kid);
+        System.out.println("=======================================");
+        System.out.println(kid.isFeasible());
 
         if (kid.isFeasible()) {
-            if ((bestFeasibleIndividual == null) || (kid.getPenalizedCost() < bestFeasibleIndividual.getPenalizedCost())) {
+            if (bestFeasibleIndividual == null || kid.getPenalizedCost() < bestFeasibleIndividual.getPenalizedCost()) {
                 bestFeasibleIndividual = kid;
+                System.out.println("Improving!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                 isImprovingSolution = true;
             }
             feasiblePopulation.add(kid);
         }
         else {
-            if ((bestFeasibleIndividual == null) || (kid.getPenalizedCost() < bestFeasibleIndividual.getPenalizedCost())) {
-                bestFeasibleIndividual = kid;
-                isImprovingSolution = true;
-            }
             infeasiblePopulation.add(kid);
         }
         process.addDiversityDistance(kid);

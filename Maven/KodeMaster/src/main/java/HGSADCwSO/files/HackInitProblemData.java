@@ -1,4 +1,4 @@
-package HGSADCwSO.files;
+package main.java.HGSADCwSO.files;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +42,7 @@ public class HackInitProblemData {
 
         // Chances
 
-        heuristicInstanceParameters.put("Education rate", "0,5");
+        heuristicInstanceParameters.put("Education rate", "1");
         heuristicInstanceParameters.put("Repair rate", "0,5");
 
         // Discretization:
@@ -60,16 +60,16 @@ public class HackInitProblemData {
 
         // Stopping and diversification
 
-        heuristicInstanceParameters.put("Iterations before diversify","500");
-        heuristicInstanceParameters.put("Iterations before stopping","2000");
+        heuristicInstanceParameters.put("Iterations before diversify","300");
+        heuristicInstanceParameters.put("Iterations before stopping","5000");
 
         // Neighbourhood
         heuristicInstanceParameters.put("Proportion of individuals considered for distance evaluation", "0,2");
         heuristicInstanceParameters.put("Granularity threshold in RI", "0,2"); //share of neighbourhood
 
         //Cache
-        heuristicInstanceParameters.put("Max cached tours per vessel", "10000");
-        heuristicInstanceParameters.put("Max cached graphs", "100");
+        heuristicInstanceParameters.put("Max cached tours per vessel", "1000000");
+        heuristicInstanceParameters.put("Max cached graphs", "1");
 
         //Mutation
         heuristicInstanceParameters.put("Mutation chance","0,0");
@@ -80,7 +80,8 @@ public class HackInitProblemData {
 
         vessels.add(new Vessel("PSV1", 100, 7, 14, 0, 0, 3, false));
         vessels.add(new Vessel("PSV2", 100, 7, 14, 0, 1, 2, false));
-        vessels.add(new Vessel("PSV3", 100, 7, 14, 0, 2, 3, true));
+        // vessels.add(new Vessel("PSV3", 100, 7, 14, 0, 2, 3, true));
+
 
 
         /*
@@ -127,10 +128,13 @@ public class HackInitProblemData {
         orders.add(new Order(11,0, installations.get(16),2, 3));
         orders.add(new Order(28,0, installations.get(11),3, 3));
         orders.add(new Order(5,0, installations.get(17),4, 3));
+
         orders.add(new Order(30,0, installations.get(20),5, 3));
+
         orders.add(new Order(14,0, installations.get(21),6, 2));
         orders.add(new Order(18,0, installations.get(26),7, 2));
         orders.add(new Order(22,0, installations.get(9), 8, 2));
+        /*
         orders.add(new Order(15,0, installations.get(1), 9, 2));
         orders.add(new Order(18,0, installations.get(2),10, 3));
         orders.add(new Order(19,0, installations.get(3),11, 3));
@@ -139,6 +143,8 @@ public class HackInitProblemData {
         orders.add(new Order(4,0, installations.get(13),14, 3));
         orders.add(new Order(20,0, installations.get(18),15, 3));
         orders.add(new Order(8,0, installations.get(15),16, 1));
+
+         */
 
 
         HashMap<Installation, HashMap<Installation, Double>> distances = new HashMap<Installation, HashMap<Installation, Double>>();

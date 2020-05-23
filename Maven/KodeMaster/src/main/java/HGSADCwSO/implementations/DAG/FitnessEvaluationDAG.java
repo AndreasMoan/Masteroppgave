@@ -1,10 +1,10 @@
-package HGSADCwSO.implementations.DAG;
+package main.java.HGSADCwSO.implementations.DAG;
 
-import HGSADCwSO.files.Genotype;
-import HGSADCwSO.files.Individual;
-import HGSADCwSO.files.ProblemData;
-import HGSADCwSO.files.Vessel;
-import HGSADCwSO.implementations.FitnessEvaluationBaseline;
+import main.java.HGSADCwSO.files.Genotype;
+import main.java.HGSADCwSO.files.Individual;
+import main.java.HGSADCwSO.files.ProblemData;
+import main.java.HGSADCwSO.files.Vessel;
+import main.java.HGSADCwSO.implementations.FitnessEvaluationBaseline;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +26,9 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
     private int multiplier;
     private int maxSizeCachedVesselTours;
     private int maxSizeCachedGraphs;
+
+    private double nCashedRetrievals = 0;
+    private double nEvaluations = 0;
 
     private HashMap<Integer, LinkedHashMap<ArrayList<Integer>, double[]>> cachedVesselTours= new HashMap<>();
 
@@ -70,6 +73,8 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
 
     public void evaluate(Individual individual, double durationViolationPenalty, double capacityViolationPenalty, double deadlineViolationPenalty) {
 
+        //System.out.println((nCashedRetrievals + 1)/( nEvaluations +1) + "    " + nEvaluations);
+
         // System.out.println("dur: " + durationViolationPenalty + "   dead:  " + deadlineViolationPenalty + "   cap: " + capacityViolationPenalty);
 
         individual.resetFeasability();
@@ -92,6 +97,8 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
             int vessel_number = vessel.getNumber();
 
             if (cachedVesselTours.get(vessel_number).containsKey(tour)) {
+                //nCashedRetrievals += 1;
+                //nEvaluations += 1;
                 scheduleCost += cachedVesselTours.get(vessel_number).get(tour)[0];
                 durationViolation += cachedVesselTours.get(vessel_number).get(tour)[1];
                 deadlineViolation += cachedVesselTours.get(vessel_number).get(tour)[2];
@@ -99,6 +106,7 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
                 duration_spot_ship_rental += cachedVesselTours.get(vessel_number).get(tour)[4];
             }
             else {
+                //nEvaluations += 1;
                 Graph graph = getDAG(tour);
                 doDijkstra(graph, vessel.getReturnDay()*24*multiplier, durationViolationPenalty, deadlineViolationPenalty); //TODO check correct return time
                 double[] vesselTourInfo = getTourInfo(graph, vessel.getReturnDay()*24*multiplier);

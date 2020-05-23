@@ -1,7 +1,7 @@
-package HGSADCwSO.implementations;
+package main.java.HGSADCwSO.implementations;
 
-import HGSADCwSO.files.*;
-import HGSADCwSO.protocols.SailingLegCalculationsProtocol;
+import main.java.HGSADCwSO.files.*;
+import main.java.HGSADCwSO.protocols.SailingLegCalculationsProtocol;
 
 import java.util.ArrayList;
 import java.util.HashMap;

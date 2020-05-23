@@ -1,6 +1,6 @@
-package HGSADCwSO.files;
+package main.java.HGSADCwSO.files;
 
-import HGSADCwSO.implementations.Move;
+import main.java.HGSADCwSO.implementations.Move;
 
 import java.util.ArrayList;
 import java.util.HashMap;

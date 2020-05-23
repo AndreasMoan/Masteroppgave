@@ -1,8 +1,8 @@
-package HGSADCwSO.implementations;
+package main.java.HGSADCwSO.implementations;
 
-import HGSADCwSO.files.Individual;
-import HGSADCwSO.files.Utilities;
-import HGSADCwSO.protocols.ParentSelectionProtocol;
+import main.java.HGSADCwSO.files.Individual;
+import main.java.HGSADCwSO.files.Utilities;
+import main.java.HGSADCwSO.protocols.ParentSelectionProtocol;
 
 import java.util.ArrayList;
 
