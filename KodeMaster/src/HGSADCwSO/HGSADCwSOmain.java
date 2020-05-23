@@ -115,9 +115,9 @@ public class HGSADCwSOmain {
         process.repair(kid);
         boolean isImprovingSolution = addToSubpopulation(kid);
         System.out.println("FSP size: " + feasiblePopulation.size() + " IFSP size: " + infeasiblePopulation.size());
-        if (kid.getPenalizedCost() < bestCost*1.05) {
-            process.elite_training(kid);
-        }
+        //if (kid.getPenalizedCost() < bestCost*1.05) {
+        //    process.elite_training(kid);
+        //}
 
         if (kid.getPenalizedCost() < bestCost) {
             bestCost = kid.getPenalizedCost();
