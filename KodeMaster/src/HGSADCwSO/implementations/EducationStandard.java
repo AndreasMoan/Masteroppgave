@@ -663,8 +663,8 @@ public class EducationStandard implements EducationProtocol {
             for (Order order : ordersToReallocateOrderFormatSorted) {
                 Integer[] cheapestVoyageAndPositionToInsertAnOrderTo = getCheapestVoyageAndPositionToInsertAnOrderTo(order, modifiedChromosome, voyageToRemove); //TODO - legg på "if getcheapestvoy.... is not null...
 
-                Integer insertOrderInVoyageNumber = cheapestVoyageAndPositionToInsertAnOrderTo.getKey();
-                Integer insertAtPositionInVoyage = cheapestVoyageAndPositionToInsertAnOrderTo.getValue();
+                Integer insertOrderInVoyageNumber = cheapestVoyageAndPositionToInsertAnOrderTo[0];
+                Integer insertAtPositionInVoyage = cheapestVoyageAndPositionToInsertAnOrderTo[1];
 
                 modifiedChromosome.get(insertOrderInVoyageNumber).add(insertAtPositionInVoyage, order.getNumber());
             }
