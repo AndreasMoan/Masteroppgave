@@ -1,4 +1,4 @@
-package main.java.HGSADCwSO.files;
+package HGSADCwSO.files;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 public class HackInitProblemData {
 
-    public static ProblemData hack(){
+    public static ProblemData hack(int scenario_number){
 
         HashMap<String, String> problemInstanceParameters = new HashMap<String, String>();
 
@@ -42,7 +42,7 @@ public class HackInitProblemData {
 
         // Chances
 
-        heuristicInstanceParameters.put("Education rate", "1");
+        heuristicInstanceParameters.put("Education rate", "0,5");
         heuristicInstanceParameters.put("Repair rate", "0,5");
 
         // Discretization:
@@ -60,37 +60,19 @@ public class HackInitProblemData {
 
         // Stopping and diversification
 
-        heuristicInstanceParameters.put("Iterations before diversify","300");
-        heuristicInstanceParameters.put("Iterations before stopping","5000");
+        heuristicInstanceParameters.put("Iterations before diversify","500");
+        heuristicInstanceParameters.put("Iterations before stopping","2000");
 
         // Neighbourhood
         heuristicInstanceParameters.put("Proportion of individuals considered for distance evaluation", "0,2");
         heuristicInstanceParameters.put("Granularity threshold in RI", "0,2"); //share of neighbourhood
 
         //Cache
-        heuristicInstanceParameters.put("Max cached tours per vessel", "1000000");
-        heuristicInstanceParameters.put("Max cached graphs", "1");
+        heuristicInstanceParameters.put("Max cached tours per vessel", "10000");
+        heuristicInstanceParameters.put("Max cached graphs", "100");
 
         //Mutation
         heuristicInstanceParameters.put("Mutation chance","0,0");
-
-
-
-        ArrayList<Vessel> vessels = new ArrayList<Vessel>();
-
-        vessels.add(new Vessel("PSV1", 100, 7, 14, 0, 0, 3, false));
-        vessels.add(new Vessel("PSV2", 100, 7, 14, 0, 1, 2, false));
-        // vessels.add(new Vessel("PSV3", 100, 7, 14, 0, 2, 3, true));
-
-
-
-        /*
-        vessels.add(new Vessel("PSV1", 100, 7, 14, 0, 0, 4));
-        vessels.add(new Vessel("PSV2", 100, 7, 14, 0, 1, 3));
-        vessels.add(new Vessel("PSV2", 100, 7, 14, 0, 2,3));
-        vessels.add(new Vessel("PSV3", 100, 7, 14, 0, 3,2));
-        vessels.add(new Vessel("PSV4", 100, 7, 14, 0, 4,3));
-        */
 
         ArrayList<Installation> installations = new ArrayList<Installation>();
 
@@ -122,30 +104,6 @@ public class HackInitProblemData {
         installations.add(new Installation("GFB", 0,24, 25));
         installations.add(new Installation("GFC", 0,24, 26));
         installations.add(new Installation("SOD", 0,24, 27));
-        ArrayList<Order> orders = new ArrayList<Order>();
-
-        orders.add(new Order(17,0, installations.get(4),1, 3));
-        orders.add(new Order(11,0, installations.get(16),2, 3));
-        orders.add(new Order(28,0, installations.get(11),3, 3));
-        orders.add(new Order(5,0, installations.get(17),4, 3));
-
-        orders.add(new Order(30,0, installations.get(20),5, 3));
-
-        orders.add(new Order(14,0, installations.get(21),6, 2));
-        orders.add(new Order(18,0, installations.get(26),7, 2));
-        orders.add(new Order(22,0, installations.get(9), 8, 2));
-        /*
-        orders.add(new Order(15,0, installations.get(1), 9, 2));
-        orders.add(new Order(18,0, installations.get(2),10, 3));
-        orders.add(new Order(19,0, installations.get(3),11, 3));
-        orders.add(new Order(20,0, installations.get(22),12, 3));
-        orders.add(new Order(26,0, installations.get(12),13, 3));
-        orders.add(new Order(4,0, installations.get(13),14, 3));
-        orders.add(new Order(20,0, installations.get(18),15, 3));
-        orders.add(new Order(8,0, installations.get(15),16, 1));
-
-         */
-
 
         HashMap<Installation, HashMap<Installation, Double>> distances = new HashMap<Installation, HashMap<Installation, Double>>();
 
@@ -178,6 +136,13 @@ public class HackInitProblemData {
         distanceMatrix.add(25, new ArrayList<Double>(Arrays.asList(86.97, 55.70, 45.86, 45.04, 49.54, 42.83, 46.38, 46.65, 46.92, 46.92, 39.72, 36.83, 36.83, 52.22, 68.48, 11.69, 10.44, 10.44, 32.27, 24.78, 24.78, 10.56, 11.00, 10.22, 1.89, 0.00, 2.03, 50.18)));
         distanceMatrix.add(26, new ArrayList<Double>(Arrays.asList(85.01, 54.09, 44.19, 43.21, 47.86, 40.93, 44.57, 44.79, 46.17, 46.17, 38.90, 35.69, 35.69, 51.58, 68.13, 10.27, 9.83, 9.83, 31.04, 23.76, 23.76, 12.52, 13.03, 11.99, 3.17, 2.03, 0.00, 48.28)));
         distanceMatrix.add(27, new ArrayList<Double>(Arrays.asList(37.67, 15.85, 11.98, 6.26, 11.26, 7.36, 6.32, 4.14, 38.54, 38.54, 35.46, 28.46, 28.46, 43.35, 60.40, 39.52, 43.68, 43.68, 27.89, 34.06, 34.06, 60.72, 60.62, 60.22, 50.13, 50.18, 48.28, 0.00)));
+
+
+        ScenarioHandler sh = new ScenarioHandler(installations);
+
+        ArrayList<Order> orders = sh.get_orders_in_scenario(scenario_number);
+        ArrayList<Vessel> vessels = sh.get_vessels_in_scenario(scenario_number);
+
 
         for (int i=0; i<28; i++) {
             distances.put(installations.get(i), new HashMap<Installation, Double>());
