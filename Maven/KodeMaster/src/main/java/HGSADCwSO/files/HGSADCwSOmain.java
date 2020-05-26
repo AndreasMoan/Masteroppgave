@@ -31,16 +31,24 @@ public class HGSADCwSOmain {
 
     public static void main(String[] args) {
         HGSADCwSOmain main = new HGSADCwSOmain();
-        main.initialize(args);
+        main.initialize(1);
+        main.fullEvolutionaryRun();
+        main.initialize(2);
+        main.fullEvolutionaryRun();
+        main.initialize(3);
+        main.fullEvolutionaryRun();
+        main.initialize(4);
+        main.fullEvolutionaryRun();
+        main.initialize(5);
         main.fullEvolutionaryRun();
     }
 
 
-    private void initialize(String[] changeParameters) {
+    private void initialize(int scenario_number) {
         startTime = System.nanoTime();
         //io = new IO(inputFileName); //TODO
         //this.args = changeParameter;
-        problemData = HackInitProblemData.hack();
+        problemData = HackInitProblemData.hack(scenario_number);
     }
 
     private void fullEvolutionaryRun(){
@@ -112,8 +120,8 @@ public class HGSADCwSOmain {
             bestCost = kid.getPenalizedCost();
             scheduleCost = kid.getScheduleCost();
         }
-        System.out.println("Iteration " + iteration + ",      Chromosome: " + kid.getVesselTourChromosome() + ", this cost: " + kid.getPenalizedCost() + ",      Best cost thus far: " + bestCost + "     " + bestFeasibleIndividual.getVesselTourChromosome());
-        System.out.println("isImpovingSolution: " + isImprovingSolution);
+        System.out.println("Chromosome: " + kid.getVesselTourChromosome() + "  |  this cost: " + kid.getPenalizedCost() + "  ||  Best cost thus far: " + bestCost + "  |  " + bestFeasibleIndividual.getVesselTourChromosome());
+        // System.out.println("isImpovingSolution: " + isImprovingSolution);
         process.updateIterationsSinceImprovementCounter(isImprovingSolution);
         process.adjustPenaltyParameters(feasiblePopulation, infeasiblePopulation);
 
@@ -156,13 +164,11 @@ public class HGSADCwSOmain {
         process.updatePenaltyAdjustmentCounter(kid);
         boolean isImprovingSolution = false;
         process.evaluate(kid);
-        System.out.println("=======================================");
-        System.out.println(kid.isFeasible());
-
+        System.out.println("======================== Iteration: " + iteration + " ========================" );
         if (kid.isFeasible()) {
             if (bestFeasibleIndividual == null || kid.getPenalizedCost() < bestFeasibleIndividual.getPenalizedCost()) {
                 bestFeasibleIndividual = kid;
-                System.out.println("Improving!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                System.out.println("New best solution found!");
                 isImprovingSolution = true;
             }
             feasiblePopulation.add(kid);

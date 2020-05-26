@@ -79,24 +79,12 @@ public class Process {
         }
     }
 
-    public void mutate(Individual individual) {
-        educationProtocol.inter_voyage_improvement(individual);
-    }
-
-
-    public Individual cloneGoodIndividual(ArrayList<Individual> feasiblePopulation, ArrayList<Individual> infeasiblePopulation) {
-        ArrayList<Individual> parents = selectParents(feasiblePopulation, infeasiblePopulation);
-        if (parents.get(0).getPenalizedCost() < parents.get(1).getPenalizedCost()) {
-            return new Individual(Utilities.deepCopyVesselTour(parents.get(0).getVesselTourChromosome()),fitnessEvaluationProtocol);
-        }
-        else {
-            return new Individual(Utilities.deepCopyVesselTour(parents.get(1).getVesselTourChromosome()),fitnessEvaluationProtocol);
-        }
-    }
 
     public void survivorSelection(ArrayList<Individual> subpopulation, ArrayList<Individual> otherSubpopulation) {
         survivorSelectionProtocol.selectSurvivors(subpopulation, otherSubpopulation, fitnessEvaluationProtocol);
     }
+
+    /*
 
     public void elite_training(Individual kid) { // TODO: Kuttt - gir ikke markant forbedring
         System.out.println();
@@ -119,6 +107,8 @@ public class Process {
         System.out.println("elite training over");
         System.out.println();
     }
+
+     */
 
     private void selectProtocols() {
         selectFitnessEvaluationProtocol();

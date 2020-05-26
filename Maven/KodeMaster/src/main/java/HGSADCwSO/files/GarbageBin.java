@@ -1,4 +1,4 @@
-package main.java.HGSADCwSO.files;
+package HGSADCwSO.files;
 
 import main.java.HGSADCwSO.implementations.Move;
 

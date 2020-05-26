@@ -31,19 +31,19 @@ public class EducationStandard implements EducationProtocol {
 
 
         fitnessEvaluationProtocol.evaluate(individual);
-        System.out.println("Penalized cost before education: " + individual.getPenalizedCost());
+        //System.out.println("Penalized cost before education: " + individual.getPenalizedCost());
 
         if (individual.getVesselTourChromosome().size() > 1) {
             new_inter_voyage_improvement(individual);
         }
 
         fitnessEvaluationProtocol.evaluate(individual);
-        System.out.println("Penalized cost after ivi: " + individual.getPenalizedCost());
+        //System.out.println("Penalized cost after ivi: " + individual.getPenalizedCost());
 
         neighbourhoodSearch(individual);
 
         fitnessEvaluationProtocol.evaluate(individual);
-        System.out.println("Penalized cost after nhs: " + individual.getPenalizedCost());
+        //System.out.println("Penalized cost after nhs: " + individual.getPenalizedCost());
 
         fitnessEvaluationProtocol.evaluate(individual);
         //System.out.println("Penalized cost after education: " + individual.getPenalizedCost());

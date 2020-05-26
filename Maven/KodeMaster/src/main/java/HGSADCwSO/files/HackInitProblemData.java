@@ -1,4 +1,4 @@
-package HGSADCwSO.files;
+package main.java.HGSADCwSO.files;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +42,7 @@ public class HackInitProblemData {
 
         // Chances
 
-        heuristicInstanceParameters.put("Education rate", "0,5");
+        heuristicInstanceParameters.put("Education rate", "1");
         heuristicInstanceParameters.put("Repair rate", "0,5");
 
         // Discretization:
