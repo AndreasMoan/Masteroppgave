@@ -31,15 +31,7 @@ public class HGSADCwSOmain {
 
     public static void main(String[] args) {
         HGSADCwSOmain main = new HGSADCwSOmain();
-        main.initialize(1);
-        main.fullEvolutionaryRun();
-        main.initialize(2);
-        main.fullEvolutionaryRun();
-        main.initialize(3);
-        main.fullEvolutionaryRun();
-        main.initialize(4);
-        main.fullEvolutionaryRun();
-        main.initialize(5);
+        main.initialize(0);
         main.fullEvolutionaryRun();
     }
 
