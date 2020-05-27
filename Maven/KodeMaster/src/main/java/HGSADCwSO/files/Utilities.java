@@ -1,5 +1,7 @@
 package main.java.HGSADCwSO.files;
 
+import main.java.HGSADCwSO.implementations.DAG.Edge;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
@@ -173,6 +175,20 @@ public class Utilities {
                     return 1;
                 }
                 else if (ind1.getDiversityContribution() > ind2.getDiversityContribution()) {
+                    return -1;
+                }
+                return 0;
+            }
+        };
+    }
+
+    public static Comparator<Edge> getEdgeTimeComparator() { //sorts in descending order
+        return new Comparator<Edge>() {
+            public int compare(Edge e1, Edge e2) {
+                if (e1.getTime_start() < e2.getTime_start()) {
+                    return 1;
+                }
+                else if (e1.getTime_start() > e2.getTime_start()) {
                     return -1;
                 }
                 return 0;
