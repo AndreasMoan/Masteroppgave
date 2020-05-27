@@ -13,11 +13,10 @@ public class Node {
     private double bestPenalizedCost;
     private Edge bestParentEdge;
 
+    ArrayList<Edge> allBestParentEdges;
+
     private double bestTotalDeadlineViolation;
     private double deadlineViolation;
-    private double durationViolation;
-
-    private boolean feasibility;
 
     public Node(int time, int orderNumber, double deadlineViolation){
         this.time = time;
@@ -25,24 +24,9 @@ public class Node {
         this.deadlineViolation = deadlineViolation;
         this.childEdges = new ArrayList<Edge>();
         this.parentEdges = new ArrayList<Edge>();
+        this.allBestParentEdges = new ArrayList<>();
         this.setBestCost(Double.POSITIVE_INFINITY);
         this.setBestPenalizedCost(Double.POSITIVE_INFINITY);
-    }
-
-    public void setDurationViolation(double durationViolation) {
-        this.durationViolation = durationViolation;
-    }
-
-    public double getDurationViolation() {
-        return durationViolation;
-    }
-
-    public void setFeasibility(boolean feasibility) {
-        this.feasibility = feasibility;
-    }
-
-    public boolean getFeasibility() {
-        return feasibility;
     }
 
     public void addParentEdge(Edge edge){
@@ -83,6 +67,13 @@ public class Node {
 
     public void setBestParentEdge(Edge bestParentEdge) {
         this.bestParentEdge = bestParentEdge;
+        if (this.allBestParentEdges.size() > 0) {
+            this.allBestParentEdges.clear();
+        }
+        for (Edge edge: bestParentEdge.getParentNode().getAllBestParentEdges()) {
+            this.allBestParentEdges.add(edge);
+        }
+        this.allBestParentEdges.add(bestParentEdge);
     }
 
     public double getDeadlineViolation() {
@@ -107,5 +98,9 @@ public class Node {
 
     public double getBestPenalizedCost() {
         return bestPenalizedCost;
+    }
+
+    public ArrayList<Edge> getAllBestParentEdges() {
+        return allBestParentEdges;
     }
 }

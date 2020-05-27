@@ -102,7 +102,7 @@ public class Graph {
         double distance = problemData.getDistanceByIndex(problemData.getInstallationNumberByOrderNumber(node.getOrderNumber()),problemData.getInstallationNumberByOrderNumber(destinationOrderNumber));
 
         int nodeStartTime = node.getTime();
-        double realStartTime = convertNodeTimeToRealTime(nodeStartTime);
+        double real_start_time = convertNodeTimeToRealTime(nodeStartTime);
 
         // System.out.println("From node Iteration  -  order number: " +  node.getOrderNumber());
 
@@ -123,32 +123,32 @@ public class Graph {
             double[] serviceInfo = servicingCalculations(finServicingTime, destinationOrderNumber);
 
             double servicingCost = serviceInfo[0];
-            double real_fin_idling_time = serviceInfo[1];
+            double real_service_time = serviceInfo[1];
 
             // System.out.println("c " + servicingCost);
-            // System.out.println("d " + real_fin_idling_time);
+            // System.out.println("d " + real_service_time);
 
-            if (!isArrivalPossible(realStartTime, distance, real_fin_idling_time)) {
+            if (!isArrivalPossible(real_start_time, distance, real_service_time)) {
                 finServicingTime++;
                 continue;
             }
 
-            double[] idlingInfo = idlingCalculations(realStartTime, distance, real_fin_idling_time);
+            double[] idlingInfo = idlingCalculations(real_start_time, distance, real_service_time);
 
             double idlingCost = idlingInfo[0];
-            double real_fin_sailing_time = idlingInfo[1];
+            double real_arrival_time = idlingInfo[1];
 
             // System.out.println("e " + idlingCost);
-            // System.out.println("f " + real_fin_sailing_time);
+            // System.out.println("f " + real_arrival_time);
 
             double sailingCost = 0;
 
             if (distance != 0) {
-                double[] timeInAllWeatherStates = getTimeInAllWS(realStartTime, real_fin_sailing_time);
+                double[] timeInAllWeatherStates = getTimeInAllWS(real_start_time, real_arrival_time);
                 // System.out.println("g " + timeInAllWeatherStates[0] + " " + timeInAllWeatherStates[1] + " " + timeInAllWeatherStates[2] + " " + timeInAllWeatherStates[3]);
                 double adjustedAverageSpeed = calculateAdjustedAverageSpeed(timeInAllWeatherStates, distance);
                 // System.out.println("h " + adjustedAverageSpeed);
-                sailingCost = (real_fin_sailing_time == realStartTime) ? 0 : sailingCalculations(timeInAllWeatherStates, adjustedAverageSpeed);
+                sailingCost = (real_arrival_time == real_start_time) ? 0 : sailingCalculations(timeInAllWeatherStates, adjustedAverageSpeed);
             }
 
 
@@ -170,13 +170,9 @@ public class Graph {
             double total_consumption_tonnes = (sailingCost + idlingCost + servicingCost)/1000;
             double total_fuel_cost = total_consumption_tonnes * problemData.getProblemInstanceParameterDouble("Fuel price");
 
-            // System.out.println("i " + total_fuel_cost);
+            double real_end_time = convertNodeTimeToRealTime(finServicingTime);
 
-            // System.out.println("Fin servicing time: " + finServicingTime);
-
-            // System.out.println("EDGE COST IS EQUAL TO: " + edgeCost);
-
-            Edge currEdge = new Edge(node, childNode, total_fuel_cost);
+            Edge currEdge = new Edge(node, childNode, total_fuel_cost, real_start_time, real_arrival_time, real_service_time, real_end_time, distance);
 
             childNode.addParentEdge(currEdge);
             node.addChildEdge(currEdge);
@@ -292,13 +288,13 @@ public class Graph {
             return new double[] {0 , finIdlingRealTime};
         }
         double idling_duration = finIdlingRealTime - longestSailingTime - startTime;
-        double real_fin_sailing_time = finIdlingRealTime - idling_duration;
-        double[] time_in_weather_states = getTimeInAllWS(real_fin_sailing_time, finIdlingRealTime);
+        double real_arrival_time = finIdlingRealTime - idling_duration;
+        double[] time_in_weather_states = getTimeInAllWS(real_arrival_time, finIdlingRealTime);
         double consumption = 0;
         for (int i = 0; i < time_in_weather_states.length; i++) {
             consumption += time_in_weather_states[i] * problemData.getWeatherImpactByState().get(i) * idlingConsumption;
         }
-        return new double[] {consumption, real_fin_sailing_time};
+        return new double[] {consumption, real_arrival_time};
     }
 
 
