@@ -3,6 +3,7 @@ package main.java.HGSADCwSO.implementations;
 import main.java.HGSADCwSO.files.Individual;
 import main.java.HGSADCwSO.files.ProblemData;
 import main.java.HGSADCwSO.files.Utilities;
+import main.java.HGSADCwSO.implementations.DAG.Node;
 import main.java.HGSADCwSO.protocols.FitnessEvaluationProtocol;
 
 import java.util.ArrayList;
@@ -207,6 +208,12 @@ public class FitnessEvaluationBaseline implements FitnessEvaluationProtocol {
 
     }
 
+    @Override
+    public HashMap<Integer,Node> getSolutionNodes(Individual individual) {
+        return null;
+    }
+
+
     public void setPenalizedCostIndividual(Individual individual) {//TODO
         setPenalizedCostIndividual(individual, durationViolationPenalty, capacityViolationPenalty, deadlineViolationPenalty);
     }
@@ -243,11 +250,11 @@ public class FitnessEvaluationBaseline implements FitnessEvaluationProtocol {
         this.durationViolationPenalty = durationViolationPenalty;
     }
 
-    public void setCapacityViolationPenalty(double capacityViolationPenalty) { //TODO
+    public void setCapacityViolationPenalty(double capacityViolationPenalty) {
         this.capacityViolationPenalty = capacityViolationPenalty;
     }
 
-    public void setDeadlineViolationPenalty(double deadlineViolationPenalty) { //TODO
+    public void setDeadlineViolationPenalty(double deadlineViolationPenalty) {
         this.deadlineViolationPenalty = deadlineViolationPenalty;
     }
 

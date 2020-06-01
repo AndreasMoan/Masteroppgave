@@ -65,7 +65,6 @@ public class InitialPopulationStandard implements InitialPopulationProtocol {
                 Collections.shuffle(vesselTourChromosome.get(i));
             }
         }
-        System.out.println(vesselTourChromosome);
         return vesselTourChromosome;
     }
 }

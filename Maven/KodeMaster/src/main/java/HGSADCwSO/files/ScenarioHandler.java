@@ -47,7 +47,7 @@ public class ScenarioHandler {
         order_deadlines.add(new ArrayList<>(Arrays.asList(0, 3, 2, 0, 0, 0, 0, 0, 2, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(0, 3, 0, 0, 0, 0, 4, 0, 0, 0, 3, 0, 3, 0, 0, 2, 0, 0, 2, 0, 0, 3, 0, 0, 0, 0, 0)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(0, 0, 3, 2, 3, 0, 0, 0, 0, 0, 4, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 0)));
-        order_deadlines.add(new ArrayList<>(Arrays.asList(0, 4, 0, 0, 3, 0, 0, 2, 3, 0, 0, 0, 0, 0, 0, 2, 3, 0, 0, 0, 0, 0, 3, 0, 0, 3, 0)));
+        order_deadlines.add(new ArrayList<>(Arrays.asList(0, 4, 0, 0, 3, 0, 0, 2, 3, 0, 0, 3, 0, 0, 0, 2, 3, 0, 0, 0, 0, 0, 3, 0, 0, 3, 0)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(0, 2, 0, 0, 1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 2, 0, 0, 0)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(0, 0, 3, 0, 0, 2, 0, 0, 0, 3, 3, 0, 0, 0, 3, 0, 0, 2, 0, 3, 0, 0, 0, 3, 4, 0, 3)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(3, 4, 3, 3, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 2, 3, 3, 4, 0, 0, 0, 0)));
@@ -149,7 +149,6 @@ public class ScenarioHandler {
                 int return_day = scenario_vessels.get(i);
                 vessels.add(new Vessel(name, 100, 7, 14, 0, counter, return_day, false));
                 counter++;
-                System.out.println("vessel");
             }
             else {
                 String name = "PSV_" + counter;
@@ -157,7 +156,6 @@ public class ScenarioHandler {
                 vessels.add(new Vessel(name, 100, 7, 14, cost, counter, 7, true));
                 spot_included = true;
                 counter++;
-                System.out.println("vessel");
             }
         }
         return vessels;

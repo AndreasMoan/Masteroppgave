@@ -45,6 +45,7 @@ public class PenaltyAdjustmentProtocol {
 
     public void adjustPenalties(ArrayList<Individual> entirePopulation, FitnessEvaluationProtocol fitnessProtocol){
         if (solutionsSincePenaltyAdjustment >= 100){
+            System.out.println();
             System.out.println("Adjusting penalty parameters...");
 
             adjustCapacityPenalty(fitnessProtocol);
@@ -54,6 +55,7 @@ public class PenaltyAdjustmentProtocol {
             System.out.println("New duration penalty: " + fitnessProtocol.getDurationViolationPenalty());
             System.out.println("New capacity penalty: " + fitnessProtocol.getCapacityViolationPenalty());
             System.out.println("New deadline penalty: " + fitnessProtocol.getDeadlineViolationPenalty());
+            System.out.println();
 
             //Resetting counting variables
             solutionsSincePenaltyAdjustment = 0;

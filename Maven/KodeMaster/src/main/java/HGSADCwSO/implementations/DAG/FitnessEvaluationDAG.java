@@ -27,17 +27,18 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
     private int maxSizeCachedVesselTours;
     private int maxSizeCachedGraphs;
 
+    private int infinity_counter = 0;
+    private int counter = 0;
+
+    private boolean is_finding_solution_node = false;
+
     private double nCashedRetrievals = 0;
     private double nEvaluations = 0;
 
+    private HashMap<Integer, Node> temp_solution_nodes;
+
     private HashMap<Integer, LinkedHashMap<ArrayList<Integer>, double[]>> cachedVesselTours= new HashMap<>();
 
-    final LinkedHashMap<ArrayList<Integer>, Graph> cachedGraphs = new LinkedHashMap<ArrayList<Integer>, Graph>() {
-        @Override
-        protected boolean removeEldestEntry(final Map.Entry eldest) {
-            return size() > maxSizeCachedGraphs;
-        }
-    };
     
     // EVT [0] = fitness, [1] = duration violation, [2] = deadline violation, [3] = capacity violation
 
@@ -47,7 +48,6 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
         this.multiplier = (int) problemData.getHeuristicParameterDouble("Number of time periods per hour");
 
         maxSizeCachedVesselTours = problemData.getHeuristicParameterInt("Max cached tours per vessel");
-        maxSizeCachedGraphs = problemData.getHeuristicParameterInt("Max cached graphs");
 
         for (int i = 0; i < problemData.getNumberOfVessels(); i++) {
 
@@ -73,6 +73,10 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
 
     public void evaluate(Individual individual, double durationViolationPenalty, double capacityViolationPenalty, double deadlineViolationPenalty) {
 
+        if (is_finding_solution_node) {
+            temp_solution_nodes = new HashMap<>();
+        }
+
         //System.out.println((nCashedRetrievals + 1)/( nEvaluations +1) + "    " + nEvaluations);
 
         // System.out.println("dur: " + durationViolationPenalty + "   dead:  " + deadlineViolationPenalty + "   cap: " + capacityViolationPenalty);
@@ -87,6 +91,8 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
         double duration_spot_ship_rental = 0;
 
         for (Vessel vessel : problemData.getVessels()){
+
+
             
             ArrayList<Integer> tour = genotype.getVesselTourChromosome().get(vessel.getNumber());
 
@@ -96,7 +102,7 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
 
             int vessel_number = vessel.getNumber();
 
-            if (cachedVesselTours.get(vessel_number).containsKey(tour)) {
+            if (cachedVesselTours.get(vessel_number).containsKey(tour) && !is_finding_solution_node) {
                 //nCashedRetrievals += 1;
                 //nEvaluations += 1;
                 scheduleCost += cachedVesselTours.get(vessel_number).get(tour)[0];
@@ -110,6 +116,11 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
                 Graph graph = getDAG(tour);
                 doDijkstra(graph, vessel.getReturnDay()*24*multiplier, durationViolationPenalty, deadlineViolationPenalty); //TODO check correct return time
                 double[] vesselTourInfo = getTourInfo(graph, vessel.getReturnDay()*24*multiplier);
+
+                if (is_finding_solution_node) {
+                    Node node = get_tour_soultion_node(graph, vessel.getReturnDay()*24*multiplier);
+                    temp_solution_nodes.put(vessel_number, node);
+                }
 
                 scheduleCost += vesselTourInfo[0];
                 durationViolation += vesselTourInfo[1];
@@ -128,34 +139,29 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
 
                 //System.out.println("Size of vessel tour cache for vessel number " + vessel.getNumber() + " is: " + cachedVesselTours.get(vessel.getNumber()).size());
             }
+
+
         }
 
         double spot_vessel_cost = duration_spot_ship_rental * problemData.getProblemInstanceParameterDouble("Hourly spot rate");
 
+        counter++;
+        if (scheduleCost == Double.POSITIVE_INFINITY) {
+            infinity_counter ++;
+            double percentage = 100*((double) infinity_counter/ (double) counter);
+            System.out.println(infinity_counter + " " + percentage + "%");
+        }
 
         individual.setScheduleCost(scheduleCost + spot_vessel_cost);
         individual.setDurationViolation(durationViolation, durationViolationPenalty);
         individual.setDeadlineViolation(deadlineViolation, deadlineViolationPenalty);
         individual.setCapacityViolation(capacityViolation, capacityViolationPenalty);
         individual.setPenalizedCost();
-
-        //individual.setSchedule(schedule)
-
-        // System.out.println("Schedule cost: " + scheduleCost + " penalized: " + individual.getPenalizedCost() + " || Violations | cap: " + capacityViolation + ", dead: "+ deadlineViolation + ", dur: "+ durationViolation);
     }
     
     public Graph getDAG(ArrayList<Integer> tour) {
-        if (cachedGraphs.containsKey(tour)) {
-            return cachedGraphs.get(tour);
-        }
-        else {
-            // System.out.println("Tour : " + tour);
-            Graph graph = new Graph(tour, problemData);
-            cachedGraphs.put(tour, graph);
-
-            // System.out.println("Size of graph cache: " + cachedGraphs.size());
-            return graph;
-        }
+        Graph graph = new Graph(tour, problemData);
+        return graph;
     }
 
 
@@ -187,36 +193,24 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
     private void expand(Node node, double deadlineViolationPenalty) {
 
         for (Edge childEdge : node.getChildEdges()){
-            // System.out.println("3 !!!!");
-
 
             Node childNode = childEdge.getChildNode();
-
-            // System.out.println("Expanding: " + node.getOrderNumber() + " " + node.getTime() + " | " + childNode.getOrderNumber() + " " + childNode.getTime() + " | " + node.getBestCost() + " " + node.getBestPenalizedCost());
 
             double childNodeDeadlinePenaltyCost = childNode.getDeadlineViolation() * deadlineViolationPenalty;
 
             if (childNode.getBestPenalizedCost() > node.getBestPenalizedCost() + childEdge.getCost() + childNodeDeadlinePenaltyCost) {
 
-                // System.out.println("Pc: " + childNode.getBestPenalizedCost() + " c: " + childNode.getBestCost());
-                // System.out.println("Edge: " + childEdge.getCost());
-                // System.out.println();
-
-
-
                 childNode.setBestPenalizedCost(node.getBestPenalizedCost() + childEdge.getCost() + childNodeDeadlinePenaltyCost);
                 childNode.setBestCost(node.getBestCost() + childEdge.getCost());
                 childNode.setBestParentEdge(childEdge);
                 childNode.setBestTotalDeadlineViolation(childNode.getDeadlineViolation() + node.getBestTotalDeadlineViolation());
-                // System.out.println("Parent node cost: " + node.getBestCost() + ", Edge cost: " + childEdge.getCost() + ", Child node cost: " + childEdge.getChildNode().getBestCost());
+
             }
         }
     }
 
 
     //--------------------------------------- SET COST ----------------------------------------
-
-
 
     private double[] getTourInfo(Graph graph, int vesselReturnTime) {
 
@@ -228,34 +222,19 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
 
         for ( Map.Entry<Integer, Node> entry : graph.getGraph().get(graph.getSize()-1).entrySet()){
 
-            // System.out.println("Least penalized cost:   " + leastPenalizedCost);
-            // System.out.println("Least cost:             " + leastCost);
-
             Node node = entry.getValue();
 
-            // System.out.println(node.getBestPenalizedCost() + " < " + leastPenalizedCost);
             if (node.getBestPenalizedCost() < leastPenalizedCost) {
 
 
                 leastPenalizedCost = node.getBestPenalizedCost();
 
-                // System.out.println(leastPenalizedCost + "    !!!!!!!!!!!!!!!! ");
                 leastCost = node.getBestCost();
                 deadlineViolation = node.getBestTotalDeadlineViolation()/multiplier;
                 durationViolation = Math.max(0, (node.getTime() - vesselReturnTime)/multiplier);
                 duration_in_hours = ((double) node.getTime() - 8 * multiplier)/multiplier;
             }
-            // System.out.println("G - PC: " + node.getBestPenalizedCost());
-            // System.out.println("G - C:  " + node.getBestCost());
         }
-
-        // // System.out.println("LFC : " + leastFeasibleCost);
-        // // System.out.println("LIC : " + leastInfeasibleCost);
-
-        // System.out.println();
-        // System.out.println("FInal: " + leastCost + "   " + deadlineViolation + "   " + durationViolation);
-        // System.out.println();
-
         return new double[] {leastCost, durationViolation, deadlineViolation, duration_in_hours};
     }
 
@@ -291,6 +270,29 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
 
         return tempIndividual.getPenalizedCost();
     }
+
+    @Override
+    public HashMap<Integer,Node> getSolutionNodes(Individual individual) {
+        this.is_finding_solution_node = true;
+        evaluate(individual);
+        this.is_finding_solution_node = false;
+        return temp_solution_nodes;
+    }
+
+    private Node get_tour_soultion_node(Graph graph, int vesselReturnTime) {
+
+        double leastPenalizedCost = Double.POSITIVE_INFINITY;
+        Node bestNode = null;
+        for ( Map.Entry<Integer, Node> entry : graph.getGraph().get(graph.getSize()-1).entrySet()){
+            Node node = entry.getValue();
+            if (node.getBestPenalizedCost() < leastPenalizedCost) {
+                leastPenalizedCost = node.getBestPenalizedCost();
+                bestNode = node;
+            }
+        }
+        return bestNode;
+    }
+
 /*
     public Schedule getSolutionFromIndividual(Individual individual){
         HashMap<Integer, ArrayList<Integer>> chromosome = individual.getVesselTourChromosome();
@@ -305,6 +307,4 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
     }
 
  */
-
-
 }

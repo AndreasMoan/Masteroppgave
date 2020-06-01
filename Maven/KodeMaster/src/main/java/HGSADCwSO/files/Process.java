@@ -63,7 +63,7 @@ public class Process {
 
     public void evaluate(Individual individual) {
         fitnessEvaluationProtocol.evaluate(individual);
-        System.out.println("Violations: " + individual.getCapacityViolation() + " " + individual.getDurationViolation() + " " + individual.getDeadlineViolation());
+        System.out.println("Violations; capacity: " + individual.getCapacityViolation() + ", duration: " + individual.getDurationViolation() + ", deadlines: " + individual.getDeadlineViolation());
     }
 
     public void repair(Individual individual) {
@@ -79,6 +79,12 @@ public class Process {
         }
     }
 
+    public void educate(Individual individual, double chance) {
+        double luck = new Random().nextDouble();
+        if (luck < chance){
+            educationProtocol.educate(individual);
+        }
+    }
 
     public void survivorSelection(ArrayList<Individual> subpopulation, ArrayList<Individual> otherSubpopulation) {
         survivorSelectionProtocol.selectSurvivors(subpopulation, otherSubpopulation, fitnessEvaluationProtocol);
@@ -168,13 +174,8 @@ public class Process {
 
     private void selectFitnessEvaluationProtocol() {
         switch (problemData.getHeuristicParameters().get("Fitness evaluation protocol")) {
-            case "heuristic":
-                fitnessEvaluationProtocol = new FitnessEvaluationHeuristic(problemData);
-                heuristicFitnessEvaluationProtocol = new FitnessEvaluationHeuristic(problemData);
-                break;
             case "dag":
                 fitnessEvaluationProtocol = new FitnessEvaluationDAG(problemData);
-                heuristicFitnessEvaluationProtocol = new FitnessEvaluationHeuristic(problemData);
                 break;
             default:
                 fitnessEvaluationProtocol = null;
@@ -197,7 +198,6 @@ public class Process {
     public void adjustPenaltyParameters(ArrayList<Individual> feasiblePopulation, ArrayList<Individual> infeasiblePopulation) {
         ArrayList<Individual> entirePopulation = Utilities.getAllElements(feasiblePopulation, infeasiblePopulation);
         penaltyAdjustmentProtocol.adjustPenalties(entirePopulation, fitnessEvaluationProtocol);
-        penaltyAdjustmentProtocol.adjustPenalties(entirePopulation, heuristicFitnessEvaluationProtocol);
     }
 
     public boolean isDiversifyIteration() {
@@ -245,6 +245,10 @@ public class Process {
 
     public void updatePenaltyAdjustmentCounter(Individual individual) {
         penaltyAdjustmentProtocol.countAddedIndividual(individual);
+    }
+
+    public void print_schedule(Individual individual) {
+        Voyage.print_schedule(individual, fitnessEvaluationProtocol);
     }
 
 }

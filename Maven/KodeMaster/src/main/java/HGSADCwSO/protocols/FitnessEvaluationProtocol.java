@@ -1,8 +1,10 @@
 package main.java.HGSADCwSO.protocols;
 
 import main.java.HGSADCwSO.files.Individual;
+import main.java.HGSADCwSO.implementations.DAG.Node;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public interface FitnessEvaluationProtocol {
 
@@ -17,6 +19,8 @@ public interface FitnessEvaluationProtocol {
     public double getHammingDistance(Individual individual1, Individual individual2);
 
     public void setPenalizedCostIndividual(Individual individual, double durationViolationPenalty, double capacityViolationPenalty, double deadlineViolationPenalty);
+
+    public HashMap<Integer,Node> getSolutionNodes(Individual individual);
 
     public void setPenalizedCostIndividual(Individual individual);
 

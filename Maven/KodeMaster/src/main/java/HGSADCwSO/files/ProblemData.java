@@ -214,4 +214,13 @@ public class ProblemData {
         int installation_number = getInstallationNumberByOrderNumber(orderNumber);
         return isInstallationByIndexClosed(installation_number, time);
     }
+
+    public void setHeuristicParameter(String name, String value) {
+        this.heuristicParameters.put(name, value);
+    }
+
+    public void setHeuristicParameters(String name, int value) {
+        String value_string = "" + value;
+        this.heuristicParameters.put(name, value_string);
+    }
 }

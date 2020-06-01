@@ -6,6 +6,8 @@ import main.java.HGSADCwSO.protocols.FitnessEvaluationProtocol;
 //import javafx.util.Pair;
 
 import java.lang.reflect.Array;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 
 public class EducationStandard implements EducationProtocol {
@@ -17,6 +19,7 @@ public class EducationStandard implements EducationProtocol {
     protected int penaltyMultiplier;
     private int counter = 0;
     private boolean deterministic_search = true;
+    NumberFormat nf = new DecimalFormat("#0.000");
 
     public EducationStandard(ProblemData problemData, FitnessEvaluationProtocol fitnessEvaluationProtocol, PenaltyAdjustmentProtocol penaltyAdjustmentProtocol) {
         this.problemData = problemData;
@@ -31,22 +34,26 @@ public class EducationStandard implements EducationProtocol {
 
 
         fitnessEvaluationProtocol.evaluate(individual);
-        //System.out.println("Penalized cost before education: " + individual.getPenalizedCost());
+        System.out.println("Penalized cost before edu: " + nf.format(individual.getPenalizedCost()) + " | " + individual.getVesselTourChromosome());
+
+        if (individual.getVesselTourChromosome().size() > 1) {
+            voyageReduction(individual);
+        }
+
+        fitnessEvaluationProtocol.evaluate(individual);
+        System.out.println("Penalized cost after vr:   " + nf.format(individual.getPenalizedCost()) + " | " + individual.getVesselTourChromosome());
+
 
         if (individual.getVesselTourChromosome().size() > 1) {
             new_inter_voyage_improvement(individual);
         }
 
         fitnessEvaluationProtocol.evaluate(individual);
-        //System.out.println("Penalized cost after ivi: " + individual.getPenalizedCost());
-
+        System.out.println("Penalized cost after ivi:  " + nf.format(individual.getPenalizedCost()) + " | " + individual.getVesselTourChromosome());
         neighbourhoodSearch(individual);
 
         fitnessEvaluationProtocol.evaluate(individual);
-        //System.out.println("Penalized cost after nhs: " + individual.getPenalizedCost());
-
-        fitnessEvaluationProtocol.evaluate(individual);
-        //System.out.println("Penalized cost after education: " + individual.getPenalizedCost());
+        System.out.println("Penalized cost after nhs:  " + nf.format(individual.getPenalizedCost()) + " | " + individual.getVesselTourChromosome());
     }
 
 
@@ -131,8 +138,13 @@ public class EducationStandard implements EducationProtocol {
             Integer u = Utilities.pickAndRemoveRandomElementFromList(untreatedOrders);
             ArrayList<Integer> neighbours = getNeighbours(u, orders);
             while (neighbours.size() > 0) {
+                Random r = new Random();
+                double x = r.nextDouble();
+                double chance = problemData.getHeuristicParameterDouble("Move chance");
                 Integer v = Utilities.pickAndRemoveRandomElementFromList(neighbours);
-                orders = doRandomMove(u, v, orders, vessel, oldVoyagePenalizedCost);
+                if (x > chance) {
+                    orders = doRandomMove(u, v, orders, vessel, oldVoyagePenalizedCost);
+                }
             }
         }
         return new ArrayList<>(orders);

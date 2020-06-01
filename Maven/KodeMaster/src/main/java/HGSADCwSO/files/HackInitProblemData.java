@@ -42,8 +42,9 @@ public class HackInitProblemData {
 
         // Chances
 
-        heuristicInstanceParameters.put("Education rate", "1");
-        heuristicInstanceParameters.put("Repair rate", "0,5");
+        heuristicInstanceParameters.put("Education rate", "0");
+        heuristicInstanceParameters.put("Repair rate", "0,0");
+        heuristicInstanceParameters.put("Move chance", "0,3");
 
         // Discretization:
 
@@ -60,7 +61,7 @@ public class HackInitProblemData {
 
         // Stopping and diversification
 
-        heuristicInstanceParameters.put("Iterations before diversify","500");
+        heuristicInstanceParameters.put("Iterations before diversify","300");
         heuristicInstanceParameters.put("Iterations before stopping","2000");
 
         // Neighbourhood
@@ -68,8 +69,8 @@ public class HackInitProblemData {
         heuristicInstanceParameters.put("Granularity threshold in RI", "0,2"); //share of neighbourhood
 
         //Cache
-        heuristicInstanceParameters.put("Max cached tours per vessel", "10000");
-        heuristicInstanceParameters.put("Max cached graphs", "100");
+        heuristicInstanceParameters.put("Max cached tours per vessel", "1000000");
+        heuristicInstanceParameters.put("Max cached graphs", "0");
 
         //Mutation
         heuristicInstanceParameters.put("Mutation chance","0,0");
