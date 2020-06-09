@@ -12,6 +12,7 @@ class Model:
         self.vessels, self.vessel_numbers = d.get_vessels_in_scenario(scenario_number)
         print(1)
         self.orders, self.order_numbers = d.get_orders_in_scenario(scenario_number)
+        self.scenario_number = scenario_number
         self.multiplier = d.number_of_time_periods_per_hour
 
 
@@ -146,9 +147,13 @@ class Model:
 
         if finish_node_time < vessel.return_day * 24 * self.multiplier:
 
+            charter_cost = 0.0
+            if vessel.is_spot_vessel:
+                charter_cost = d.spotHourRate * ((finish_node_time - start_node_time) / self.multiplier)
+
             self.nodes[vessel_number][finish_node_time][destination_order.number] = True
 
-            arc_cost = ((sailing_consumption + idling_consumption + servicing_consumption)*d.fuel_price)
+            arc_cost = ((sailing_consumption + idling_consumption + servicing_consumption)*d.fuel_price + charter_cost)
 
             print("i ", arc_cost)
             print("Adding arc number:", self.counter)
