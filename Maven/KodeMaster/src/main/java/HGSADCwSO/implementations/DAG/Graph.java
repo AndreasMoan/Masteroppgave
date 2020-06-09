@@ -37,7 +37,7 @@ public class Graph {
 
     public Graph(ArrayList<Integer> voyage, ProblemData problemData) {
         this.voyage = voyage;
-        // System.out.println(voyage);
+        // // System.out.println(voyage);
         this.problemData = problemData;
         this.graph = new HashMap<Integer, HashMap<Integer, Node>>();
 
@@ -87,21 +87,17 @@ public class Graph {
             for (int time : graph.get(j).keySet()){
 
 
-                //System.out.println();
-                //System.out.println("Building: " + graph.get(j).get(time).getOrderNumber() + " " + voyageWithDepot.get(j + 1));
-                //System.out.println();
+                //// System.out.println();
+                //// System.out.println("Building: " + graph.get(j).get(time).getOrderNumber() + " " + voyageWithDepot.get(j + 1));
+                //// System.out.println();
                 buildEdgesFromNode(graph.get(j).get(time), voyageWithDepot.get(j + 1), j);
             }
-            int no1 = voyageWithDepot.get(j);
-            int no2 = voyageWithDepot.get(j+1);
-            double distance = problemData.getDistanceByIndex(problemData.getInstallationNumberByOrderNumber(no1),problemData.getInstallationNumberByOrderNumber(no2));
-            // System.out.println(graph.get(j).size() + " distance = " + distance + " i1: " + problemData.getInstallationNumberByOrderNumber(no1) + " i2: " + problemData.getInstallationNumberByOrderNumber(no2));
         }
     }
 
     private void buildEdgesFromNode(Node node, int destinationOrderNumber, int legNumber) {
 
-        //System.out.println("Creating edges from time: " + node.getTime());
+        // System.out.println("Creating edges from time: " + node.getTime());
 
 
         double distance = problemData.getDistanceByIndex(problemData.getInstallationNumberByOrderNumber(node.getOrderNumber()),problemData.getInstallationNumberByOrderNumber(destinationOrderNumber));
@@ -109,12 +105,12 @@ public class Graph {
         int nodeStartTime = node.getTime();
         double real_start_time = convertNodeTimeToRealTime(nodeStartTime);
 
-        //System.out.println("From node Iteration  -  order number: " +  node.getOrderNumber());
+        // System.out.println("From node Iteration  -  order number: " +  node.getOrderNumber());
 
 
         int earliestTheoreticalEndTime = nodeStartTime + (int) ceil((distance/maxSpeed + problemData.getDemandByOrderNumber(destinationOrderNumber)*timePerHiv)*multiplier);
         int latestTheoreticalEndTime = nodeStartTime + (int) ceil((distance/minSpeed + problemData.getDemandByOrderNumber(destinationOrderNumber)*timePerHiv*1.3)*multiplier);
-        //System.out.println("a " + earliestTheoreticalEndTime + " " + latestTheoreticalEndTime);
+        // System.out.println("a " + earliestTheoreticalEndTime + " " + latestTheoreticalEndTime);
 
         int finServicingTime = earliestTheoreticalEndTime;
 
@@ -123,15 +119,15 @@ public class Graph {
 
             finServicingTime = getEarliestFeasibleSercivingFinishingTime(finServicingTime , destinationOrderNumber, 0);
 
-            //System.out.println("b " + finServicingTime);
+            // System.out.println("fst: " + finServicingTime);
 
             double[] serviceInfo = servicingCalculations(finServicingTime, destinationOrderNumber);
 
             double servicingCost = serviceInfo[0];
             double real_service_time = serviceInfo[1];
 
-            //System.out.println("c " + servicingCost);
-            //System.out.println("d " + real_service_time);
+            // System.out.println("sc:  " + servicingCost);
+            // System.out.println("rst: " + real_service_time);
 
             if (!isArrivalPossible(real_start_time, distance, real_service_time)) {
                 finServicingTime++;
@@ -143,20 +139,22 @@ public class Graph {
             double idlingCost = idlingInfo[0];
             double real_arrival_time = idlingInfo[1];
 
-            //System.out.println("e " + idlingCost);
-            //System.out.println("f " + real_arrival_time);
+            // System.out.println("ic:  " + idlingCost);
+            // System.out.println("rat: " + real_arrival_time);
 
             double sailingCost = 0;
 
             if (distance != 0) {
                 double[] timeInAllWeatherStates = getTimeInAllWS(real_start_time, real_arrival_time);
-                //System.out.println("g " + timeInAllWeatherStates[0] + " " + timeInAllWeatherStates[1] + " " + timeInAllWeatherStates[2] + " " + timeInAllWeatherStates[3]);
+                // System.out.println("tws: " + timeInAllWeatherStates[0] + " " + timeInAllWeatherStates[1] + " " + timeInAllWeatherStates[2] + " " + timeInAllWeatherStates[3]);
                 double adjustedAverageSpeed = calculateAdjustedAverageSpeed(timeInAllWeatherStates, distance);
-                //System.out.println("h " + adjustedAverageSpeed);
+                // System.out.println("aas: " + adjustedAverageSpeed);
                 sailingCost = (real_arrival_time == real_start_time) ? 0 : sailingCalculations(timeInAllWeatherStates, adjustedAverageSpeed);
+                // System.out.println("sc:  " + sailingCost);
+                // System.out.println("d:   " + distance);
             }
 
-
+            // System.out.println("vessel: " + "?" + " dep order:" + node.getOrderNumber() + " dest order: " + destinationOrderNumber + " start: " + nodeStartTime + " finish: " + finServicingTime + " c sail: " + sailingCost + " c idle: " + idlingCost + " c ser: " + servicingCost);
             Node childNode;
 
             if (isNodeInGraph(legNumber + 1, finServicingTime)) {
@@ -198,7 +196,7 @@ public class Graph {
 
     private boolean isServicePossible(int finServicingNodeTime, int destinationOrder) {
 
-        // System.out.println("Service possible check");
+        // // System.out.println("Service possible check");
 
         double realTime = convertNodeTimeToRealTime(finServicingNodeTime);
 
@@ -246,31 +244,46 @@ public class Graph {
         double servicingTimeLeft = problemData.getDemandByOrderNumber(order)*timePerHiv;
         double consumption = 0;
 
+        // System.out.println("dem: " + problemData.getDemandByOrderNumber(order));
+
+
+        // System.out.println(" - " + realTime + " - " + consumption + " - " + servicingTimeLeft);
+
         while (servicingTimeLeft > 0) {
+
             if (realTime % 1 > 0) {
-                if (servicingTimeLeft < (realTime % 1)/ problemData.getWeatherImpactByHour((int) floor(realTime))) {
-                    consumption += servicingConsumption * servicingTimeLeft * problemData.getWeatherImpactByHour((int) floor(realTime));
-                    realTime -= servicingTimeLeft * problemData.getWeatherImpactByHour((int) floor(realTime));
+
+                double weather_impact = problemData.getWeatherImpactByHour((int) floor(realTime));
+                // System.out.println("wi:  " + weather_impact);
+
+                if (servicingTimeLeft < (realTime % 1)/ weather_impact) {
+                    consumption += servicingConsumption * servicingTimeLeft * weather_impact;
+                    realTime -= servicingTimeLeft * weather_impact;
                     servicingTimeLeft = -1;
                 }
                 else {
-                    consumption += servicingConsumption * (realTime % 1) * problemData.getWeatherImpactByHour((int) floor(realTime));
-                    servicingTimeLeft -= (realTime % 1) / problemData.getWeatherImpactByHour((int) floor(realTime));
+                    consumption += servicingConsumption * (realTime % 1) * weather_impact;
+                    servicingTimeLeft -= (realTime % 1) / weather_impact;
                     realTime = floor(realTime);
                 }
             }
             else {
-                if (servicingTimeLeft < 1 / problemData.getWeatherImpactByHour((int) realTime - 1)) {
-                    consumption += servicingConsumption * servicingTimeLeft * problemData.getWeatherImpactByHour((int) realTime - 1);
-                    realTime -= servicingTimeLeft * problemData.getWeatherImpactByHour((int) realTime - 1);
+
+                double weather_impact = problemData.getWeatherImpactByHour((int) floor(realTime -1));
+                // System.out.println("wi:  " + weather_impact);
+
+                if (servicingTimeLeft < 1 / weather_impact) {
+                    consumption += servicingConsumption * servicingTimeLeft * weather_impact;
+                    realTime -= servicingTimeLeft * weather_impact;
                     servicingTimeLeft = - 1;
                 }
                 else {
-                    consumption += servicingConsumption * problemData.getWeatherImpactByHour((int) realTime - 1);
-                    servicingTimeLeft -= 1 / problemData.getWeatherImpactByHour((int) realTime - 1);
+                    consumption += servicingConsumption * weather_impact;
+                    servicingTimeLeft -= 1 / weather_impact;
                     realTime--;
                 }
             }
+            // System.out.println(" - " + realTime + " - " + consumption + " - "  + servicingTimeLeft);
         }
         return new double[] {consumption, realTime};
     }
@@ -371,8 +384,11 @@ public class Graph {
     private double sailingCalculations(double[] timeInAllWeatherStates, double adjustedAverageSpeed) {
         double cost = 0;
         cost += (timeInAllWeatherStates[0] + timeInAllWeatherStates[1])*consumption_per_hour_at_speed(adjustedAverageSpeed);
-        cost += (adjustedAverageSpeed < maxSpeedWS2) ? timeInAllWeatherStates[2]*consumption_per_hour_at_speed(adjustedAverageSpeed + speedImpactWS2) : timeInAllWeatherStates[1]*consumption_per_hour_at_speed(maxSpeed);
-        cost += (adjustedAverageSpeed < maxSpeedWS3) ? timeInAllWeatherStates[3]*consumption_per_hour_at_speed(adjustedAverageSpeed + speedImpactWS3) : timeInAllWeatherStates[2]*consumption_per_hour_at_speed(maxSpeed);
+        // // System.out.println(cost);
+        cost += (adjustedAverageSpeed < maxSpeedWS2) ? timeInAllWeatherStates[2]*consumption_per_hour_at_speed(adjustedAverageSpeed + speedImpactWS2) : timeInAllWeatherStates[2]*consumption_per_hour_at_speed(maxSpeed);
+        // // System.out.println(cost);
+        cost += (adjustedAverageSpeed < maxSpeedWS3) ? timeInAllWeatherStates[3]*consumption_per_hour_at_speed(adjustedAverageSpeed + speedImpactWS3) : timeInAllWeatherStates[3]*consumption_per_hour_at_speed(maxSpeed);
+        // // System.out.println(cost);
         return cost;
     }
 

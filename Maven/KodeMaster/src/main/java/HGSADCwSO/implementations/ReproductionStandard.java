@@ -7,6 +7,7 @@ import main.java.HGSADCwSO.protocols.FitnessEvaluationProtocol;
 import main.java.HGSADCwSO.protocols.ReproductionProtocol;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 public class ReproductionStandard implements ReproductionProtocol {
 
@@ -127,39 +128,54 @@ public class ReproductionStandard implements ReproductionProtocol {
 
         //STEP 3:
 
-        Individual offspring = new Individual(kid, fitnessEvaluationProtocol);
-        fitnessEvaluationProtocol.evaluate(offspring);
-        double unfinished_penalized_cost = offspring.getPenalizedCost();
-        double candidate_offspring_penalized_cost = 0;
-
         for (int orderNumber : allOrders) {
 
-            double least_added_cost =  Double.POSITIVE_INFINITY;
-            int bestInsertionVessel = 0;
-            int bestInsertionPosition = 0;
+            ExecutorService executor = Executors.newFixedThreadPool(40); //TODO 40
+            List<Callable<double[]>> tasksList = new ArrayList<>();
 
             for (int vesselNumber = 0; vesselNumber < kid.size(); vesselNumber++) {
 
                 for (int insertionPosition = 0; insertionPosition <= kid.get(vesselNumber).size(); insertionPosition++){
 
-                    HashMap<Integer, ArrayList<Integer>> copy_of_kid = Utilities.deepCopyVesselTour(kid);
-                    copy_of_kid.get(vesselNumber).add(insertionPosition, orderNumber);
-                    Individual candidate_offspring = new Individual(copy_of_kid, fitnessEvaluationProtocol);
-                    fitnessEvaluationProtocol.evaluate(candidate_offspring);
-                    candidate_offspring_penalized_cost = candidate_offspring.getPenalizedCost();
 
-                    double added_cost = Math.max(0, candidate_offspring_penalized_cost - unfinished_penalized_cost);
+                    int vn = vesselNumber;
+                    int ip = insertionPosition;
 
-                    if (added_cost < least_added_cost) {
-                        least_added_cost = added_cost;
-                        bestInsertionPosition = insertionPosition;
-                        bestInsertionVessel = vesselNumber;
-                    }
+                    Callable<double[]> task = () -> {
 
+                        HashMap<Integer, ArrayList<Integer>> copy_of_kid = Utilities.deepCopyVesselTour(kid);
+                        copy_of_kid.get(vn).add(ip, orderNumber);
+
+                        Individual candidate_offspring = new Individual(copy_of_kid, fitnessEvaluationProtocol);
+                        fitnessEvaluationProtocol.evaluate(candidate_offspring);
+
+                        double candidate_offspring_penalized_cost = candidate_offspring.getPenalizedCost();
+                        return new double[] {candidate_offspring_penalized_cost, vn, ip};
+                    };
+                    tasksList.add(task);
                 }
             }
-            kid.get(bestInsertionVessel).add(bestInsertionPosition,orderNumber);
-            unfinished_penalized_cost = candidate_offspring_penalized_cost;
+            int best_vn = -1;
+            int best_ip = -1;
+            double best_copc = Double.POSITIVE_INFINITY;
+
+            try {
+                List<Future<double[]>> results = executor.invokeAll(tasksList);
+
+                for (Future<double[]> result : results) {
+                    if (result.get()[0] < best_copc) {
+                        best_copc = result.get()[0];
+                        best_vn = (int) result.get()[1];
+                        best_ip = (int) result.get()[2];
+                    }
+                }
+            }
+            catch (InterruptedException | ExecutionException e1) {
+                e1.printStackTrace();
+            }
+            executor.shutdownNow();
+
+            kid.get(best_vn).add(best_ip, orderNumber);
         }
         return new Individual(kid, fitnessEvaluationProtocol);
     }

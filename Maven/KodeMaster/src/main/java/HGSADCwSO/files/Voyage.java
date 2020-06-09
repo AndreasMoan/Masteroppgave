@@ -11,16 +11,16 @@ import java.util.HashMap;
 public class Voyage {
 
 
-    public static void print_schedule(Individual individual, FitnessEvaluationProtocol fitnessEvaluationProtocol) {
+    public static void print_schedule(Individual individual, FitnessEvaluationProtocol fitnessEvaluationProtocol, ProblemData problemData) {
         HashMap<Integer, Node> solution_nodes = fitnessEvaluationProtocol.getSolutionNodes(individual);
         System.out.println("============ Printing schedule: ============");
         System.out.println(individual.getVesselTourChromosome());
         for (Integer vessel_number : solution_nodes.keySet()) {
-            printVoyage(vessel_number, solution_nodes.get(vessel_number), individual);
+            printVoyage(vessel_number, solution_nodes.get(vessel_number), individual, problemData);
         }
     }
 
-    public static void printVoyage(int vessel_number, Node best_solution_node, Individual individual) {
+    public static void printVoyage(int vessel_number, Node best_solution_node, Individual individual, ProblemData problemData) {
         System.out.println();
         System.out.println("------------ vessel number " + vessel_number + " -----------");
         ArrayList<Edge> solution_edges = best_solution_node.getAllBestParentEdges();
@@ -29,7 +29,7 @@ public class Voyage {
             Edge edge = solution_edges.get(i);
             int installation_number = 0;
             if (i < solution_edges.size() -1) {
-                installation_number = individual.getVesselTourChromosome().get(vessel_number).get(i);
+                installation_number = problemData.getInstallationNumberByOrderNumber(individual.getVesselTourChromosome().get(vessel_number).get(i));
             }
             System.out.println("Leg nr. " + i + " to installation " + installation_number
                     + ", depatures: " + convertTime(edge.getTime_start())

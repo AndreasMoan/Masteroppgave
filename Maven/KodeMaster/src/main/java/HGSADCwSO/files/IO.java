@@ -14,10 +14,8 @@ public class IO {
     File file;
 
     public IO(int scenario_number) throws IOException {
-        Random r = new Random();
-        int out_file_number = r.nextInt(10000);
         this.scenario_number = scenario_number;
-        String filename = "param_tuning_" + out_file_number + ".txt";
+        String filename = "Run_" + scenario_number + ".txt";
         try {
             file = new File(filename);
             if (file.createNewFile()) {
@@ -30,12 +28,6 @@ public class IO {
             e.printStackTrace();
         }
         file_writer = new FileWriter(filename);
-    }
-
-    public void writeScenarioInfo(int n) throws IOException {
-        String line = "Parameter tuning data for scenario nr. " + n + "\n";
-        file_writer.write(line);
-        file_writer.flush();
     }
 
     private double convert_time(double nano_time) {
@@ -57,10 +49,6 @@ public class IO {
                 "\n\nIteration - time spent - final objective value\n";
         file_writer.write(line);
         file_writer.flush();
-    }
-
-    public void writeRunNumber(int n) {
-        String line = "\n------------------- Run nr. " + n + " -------------------\n";
     }
 
     public void writeImprovementIteration(int iteration, double nano_time, double objective) throws IOException {

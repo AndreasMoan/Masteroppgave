@@ -28,26 +28,26 @@ public class SurvivorSelectionStandard implements SurvivorSelectionProtocol {
         Collections.sort(clones,  Collections.reverseOrder(Utilities.getBiasedFitnessComparator()));
         Collections.sort(subpopulation,  Collections.reverseOrder(Utilities.getBiasedFitnessComparator()));
 
-        System.out.println();
-        System.out.println("Killing individuals!");
-        System.out.println();
+        // System.out.println();
+        // System.out.println("Killing individuals!");
+        // System.out.println();
 
         while (subpopulation.size() > populationSize) {
             if (clones.size() > 0) {
-                System.out.println("Removing clone:      " + clones.get(0).getPenalizedCost());
+                // System.out.println("Removing clone:      " + clones.get(0).getPenalizedCost());
                 HGSADCwSOmain.removeFromSubpopulation(subpopulation, clones.remove(0), otherSubpopulation, fitnessEvaluationProtocol, true);
             }
             else {
-                System.out.println("Removing individual: " + subpopulation.get(0).getPenalizedCost());
+                // System.out.println("Removing individual: " + subpopulation.get(0).getPenalizedCost());
                 HGSADCwSOmain.removeFromSubpopulation(subpopulation, subpopulation.get(0), otherSubpopulation , fitnessEvaluationProtocol, true);
             }
             Collections.sort(clones,  Collections.reverseOrder(Utilities.getBiasedFitnessComparator()));
             Collections.sort(subpopulation,  Collections.reverseOrder(Utilities.getBiasedFitnessComparator()));
         }
 
-        System.out.println();
+        // System.out.println();
         for (Individual individual : subpopulation) {
-            System.out.println("Survivor penalized cost: " + individual.getPenalizedCost());
+            // System.out.println("Survivor penalized cost: " + individual.getPenalizedCost());
         }
     }
 

@@ -20,28 +20,26 @@ public class HGSADCwSOmain {
     private double bestCost = Double.POSITIVE_INFINITY;
 
     private int iteration;
+    private double duration;
+
+    private int run_id;
 
     private IO io;
 
-    public HGSADCwSOmain(int scenario_number, String education_rate, String repair_rate, String move_rate, String min_pop_size, String generation_size) throws IOException {
-        // main.parameter_tuner();
-        io = new IO(6);
-        io.writeScenarioInfo(6);
-        initialize(scenario_number, education_rate, repair_rate, move_rate, min_pop_size, generation_size);
+    public HGSADCwSOmain(int run_id, int scenario_number , String disco_param) throws IOException {
+        io = new IO(scenario_number);
+        initialize(run_id, scenario_number, disco_param);
         io.writeRunInfo(problemData);
     }
 
-    private void initialize(int scenario_number, String education_rate, String repair_rate, String move_rate, String min_pop_size, String generation_size) throws IOException {
+    private void initialize(int run_id, int scenario_number, String disco_param) throws IOException {
         startTime = System.nanoTime();
         problemData = HackInitProblemData.hack(scenario_number);
-        problemData.setHeuristicParameter("Education rate", education_rate);
-        problemData.setHeuristicParameter("Repair rate", repair_rate);
-        problemData.setHeuristicParameter("Move chance", move_rate);
-        problemData.setHeuristicParameter("Population size", min_pop_size);
-        problemData.setHeuristicParameter("Number of offspring in a generation", generation_size);
+        problemData.setHeuristicParameter("Number of time periods per hour", disco_param);
+        this.run_id = run_id;
     }
 
-    public boolean fullEvolutionaryRun() throws IOException {
+    public String fullEvolutionaryRun() throws IOException {
 
         process = new Process(problemData);
         feasiblePopulation = new ArrayList<Individual>();
@@ -52,12 +50,20 @@ public class HGSADCwSOmain {
         problemData.printProblemData();
 
 
-        System.out.println("Creating initial population...");
+        // System.out.println("Creating initial population...");
         createInitialPopulation();
         process.updateIterationsSinceImprovementCounter(true);
         runEvolutionaryLoop();
         terminate();
-        return true;
+        return getResultString();
+    }
+
+    private String getResultString() {
+        String s = "";
+        s += run_id + "| ";
+        s += duration/1000000000 + "| ";
+        s += bestCost;
+        return s;
     }
 
     private void createInitialPopulation() throws IOException {
@@ -110,7 +116,7 @@ public class HGSADCwSOmain {
         boolean isImprovingSolution = addToSubpopulation(kid);
         System.out.println("FSP size: " + feasiblePopulation.size() + " IFSP size: " + infeasiblePopulation.size());
         System.out.println("Chromosome: " + kid.getVesselTourChromosome() + "  |  this cost: " + kid.getPenalizedCost() + "  ||  Best cost thus far: " + bestCost + "  |  " + bestFeasibleIndividual.getVesselTourChromosome());
-        // System.out.println("isImpovingSolution: " + isImprovingSolution);
+        System.out.println("isImpovingSolution: " + isImprovingSolution);
         process.updateIterationsSinceImprovementCounter(isImprovingSolution);
         process.adjustPenaltyParameters(feasiblePopulation, infeasiblePopulation);
 
@@ -157,7 +163,7 @@ public class HGSADCwSOmain {
             if (bestFeasibleIndividual == null || kid.getPenalizedCost() < bestFeasibleIndividual.getPenalizedCost()) {
                 bestFeasibleIndividual = kid;
                 bestCost = kid.getPenalizedCost();
-                System.out.println("New best solution found!");
+                // System.out.println("New best solution found!");
                 double time = System.nanoTime() - startTime;
                 io.writeImprovementIteration(iteration, time, bestCost);
                 isImprovingSolution = true;
@@ -207,8 +213,9 @@ public class HGSADCwSOmain {
     private void terminate() throws IOException {
         stopTime = System.nanoTime();
         double duration = stopTime - startTime;
+        this.duration = duration;
         io.writeFinalSolution(iteration, duration, bestFeasibleIndividual);
-        System.out.println("Final population: ");
+        // System.out.println("Final population: ");
         printPopulation();
         printRunStatistics();
         printBestSolution();
@@ -225,7 +232,7 @@ public class HGSADCwSOmain {
     private void printBestSolution() {
 
         System.out.println("============ BEST SOLUTION: ============");
-        System.out.println();
+        System.out.println("(run id: " + run_id + " )");
         Individual winner = bestFeasibleIndividual;
 
         System.out.println("Vessel tour chromosome: " + winner.getVesselTourChromosome());

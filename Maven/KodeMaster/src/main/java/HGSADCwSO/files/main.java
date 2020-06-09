@@ -2,6 +2,9 @@ package main.java.HGSADCwSO.files;
 
 import jdk.dynalink.beans.StaticClass;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,8 +16,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-public class Main
+class Main
 {
+    /*
+    public static void main(String[] args) throws ExecutionException, IOException {
+        //Executor service instance
+        HGSADCwSOmain run = new HGSADCwSOmain(1, 19);
+        System.out.println(run.fullEvolutionaryRun());
+        System.out.println("Done");
+    }
+    */
+
     public static void main(String[] args) throws ExecutionException
     {
         //Executor service instance
@@ -23,71 +35,66 @@ public class Main
         List<Callable<String>> tasksList = get_task_list();
 
         //1. execute tasks list using invokeAll() method
-        try
-        {
+        try {
             List<Future<String>> results = executor.invokeAll(tasksList);
 
-            for(Future<String> result : results) {
-                System.out.println(result.get());
+            File file;
+            String filename = "full_run_stack.txt";
+            try {
+                file = new File(filename);
+                if (file.createNewFile()) {
+                    System.out.println("File created: " + file.getName());
+                } else {
+                    System.out.println("File already exists.");
+                }
+                FileWriter fileWriter = new FileWriter(filename);
+                for (Future<String> result : results) {
+                    System.out.println(result.get());
+                    fileWriter.write(result.get());
+                    fileWriter.flush();
+                }
+                fileWriter.close();
+            } catch (IOException e) {
+                System.out.println("An error occurred.");
+                e.printStackTrace();
             }
+
         }
-        catch (InterruptedException e1)
-        {
+        catch (InterruptedException e1) {
             e1.printStackTrace();
         }
 
         //2. execute individual tasks using submit() method
-        Future<String> result = executor.submit(callableTask);
-
-        while(result.isDone() == false)
-        {
-            try
-            {
-                System.out.println("The method return value : " + result.get());
-                break;
-            }
-            catch (InterruptedException | ExecutionException e)
-            {
-                e.printStackTrace();
-            }
-
-            //Sleep for 1 second
-            try {
-                Thread.sleep(1000L);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
 
         //Shut down the executor service
         executor.shutdownNow();
+        System.out.println("Done");
     }
 
 
     private static List<Callable<String>> get_task_list() {
-        List<Callable<Boolean> tasksList = new ArrayList<>();
-        List<Integer> scenario_numbers = Arrays.asList(3, 6, 9, 12);
-        List<String> education_rates = Arrays.asList("0", "0,1", "0,2", "0,5", "1");
-        List<String> repair_rates = Arrays.asList("0,25", "0,5", "0,75");
-        List<String> move_rates = Arrays.asList("0,2", "0,3", "0,5", "1");
-        List<String> min_pop_sizes = Arrays.asList("25");
-        List<String> generation_sizes = Arrays.asList("75");
+        List<Callable<String>> tasks_list = new ArrayList<>();
+        List<Integer> scenario_numbers = Arrays.asList(15);//0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19);
+        List<String> disco = Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10");
+        int run_id = 0;
         for (int scenario_number : scenario_numbers) {
-            for (String education_rate : education_rates){
-                for (String repair_rate : repair_rates) {
-                    for (String move_rate : move_rates) {
-                        for (String min_pop_size : min_pop_sizes) {
-                            for (String generation_size : generation_sizes) {
-                                Callable<Void> task = () -> {
-                                    HGSADCwSOmain run = new HGSADCwSOmain(scenario_number, education_rate, repair_rate, move_rate, min_pop_size, generation_size);
-                                    return run.fullEvolutionaryRun();
-                                }
-                            }
-                        }
+            for (String disco_param : disco) {
+                int id = run_id;
+                Callable<String> task = () -> {
+                    String s = "";
+                    try {
+                        HGSADCwSOmain run = new HGSADCwSOmain(id, scenario_number, disco_param);
+                        s += run.fullEvolutionaryRun();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        s += id + "|error|error";
                     }
-                }
+                    return s + "| " + scenario_number + "|" + disco_param + "\n";//n + cap_pen + "| " + dead_pen + "| " + dur_pen + "|\n";// + "| " + min_pop_size + "| " + generation_size + "\n";
+                };
+                tasks_list.add(task);
+                run_id++;
             }
         }
-
+        return tasks_list;
     }
 }

@@ -48,11 +48,11 @@ public class ScenarioHandler {
         order_deadlines.add(new ArrayList<>(Arrays.asList(0, 3, 0, 0, 0, 0, 4, 0, 0, 0, 3, 0, 3, 0, 0, 2, 0, 0, 2, 0, 0, 3, 0, 0, 0, 0, 0)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(0, 0, 3, 2, 3, 0, 0, 0, 0, 0, 4, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 0)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(0, 4, 0, 0, 3, 0, 0, 2, 3, 0, 0, 3, 0, 0, 0, 2, 3, 0, 0, 0, 0, 0, 3, 0, 0, 3, 0)));
-        order_deadlines.add(new ArrayList<>(Arrays.asList(0, 2, 0, 0, 1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 2, 0, 0, 0)));
-        order_deadlines.add(new ArrayList<>(Arrays.asList(0, 0, 3, 0, 0, 2, 0, 0, 0, 3, 3, 0, 0, 0, 3, 0, 0, 2, 0, 3, 0, 0, 0, 3, 4, 0, 3)));
+        order_deadlines.add(new ArrayList<>(Arrays.asList(0, 2, 3, 3, 1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 3, 2, 0, 0, 0)));
+        order_deadlines.add(new ArrayList<>(Arrays.asList(0, 0, 3, 0, 3, 2, 0, 0, 0, 3, 3, 0, 0, 0, 3, 0, 0, 2, 0, 3, 0, 0, 0, 3, 4, 0, 3)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(3, 4, 3, 3, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 2, 3, 3, 4, 0, 0, 0, 0)));
-        order_deadlines.add(new ArrayList<>(Arrays.asList(3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 3, 0, 3, 3, 0, 3, 3, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4)));
-        order_deadlines.add(new ArrayList<>(Arrays.asList(0, 3, 0, 0, 0, 2, 3, 3, 2, 0, 0, 0, 0, 3, 2, 3, 4, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0)));
+        order_deadlines.add(new ArrayList<>(Arrays.asList(3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 3, 0, 3, 3, 0, 3, 3, 0, 4, 3, 0, 0, 4, 0, 0, 0, 4)));
+        order_deadlines.add(new ArrayList<>(Arrays.asList(0, 3, 3, 0, 0, 2, 3, 3, 2, 0, 0, 0, 0, 3, 2, 3, 4, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(3, 3, 0, 3, 0, 3, 0, 4, 0, 3, 0, 3, 3, 3, 0, 0, 0, 4, 4, 4, 4, 0, 0, 3, 0, 4, 0)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(0, 3, 3, 3, 4, 4, 4, 0, 0, 0, 4, 4, 3, 2, 0, 0, 0, 3, 3, 3, 0, 0, 4, 4, 0, 0, 0)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(0, 0, 3, 0, 0, 4, 0, 3, 3, 3, 3, 0, 0, 3, 3, 0, 4, 4, 4, 4, 4, 4, 4, 0, 4, 4, 0)));
@@ -128,7 +128,7 @@ public class ScenarioHandler {
         int counter = 1;
         for (int i = 0; i < scenario_demand.size(); i++ ){
             if (scenario_demand.get(i) != 0) {
-                int order_demand = (int) Math.round(standard_order_size.get(i + 1) * order_size_variations.get(scenario_demand.get(i)));
+                int order_demand = (int) Math.floor(standard_order_size.get(i + 1) * order_size_variations.get(scenario_demand.get(i)));
                 int deadline_day = scenario_deadlines.get(i);
                 Installation installation = this.installations.get(i + 1);
                 orders.add(new Order(order_demand, 0, installation, counter, deadline_day));

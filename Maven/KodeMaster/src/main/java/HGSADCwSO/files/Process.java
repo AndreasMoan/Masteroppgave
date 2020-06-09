@@ -63,7 +63,7 @@ public class Process {
 
     public void evaluate(Individual individual) {
         fitnessEvaluationProtocol.evaluate(individual);
-        System.out.println("Violations; capacity: " + individual.getCapacityViolation() + ", duration: " + individual.getDurationViolation() + ", deadlines: " + individual.getDeadlineViolation());
+        // System.out.println("Violations; capacity: " + individual.getCapacityViolation() + ", duration: " + individual.getDurationViolation() + ", deadlines: " + individual.getDeadlineViolation());
     }
 
     public void repair(Individual individual) {
@@ -248,7 +248,7 @@ public class Process {
     }
 
     public void print_schedule(Individual individual) {
-        Voyage.print_schedule(individual, fitnessEvaluationProtocol);
+        Voyage.print_schedule(individual, fitnessEvaluationProtocol, problemData);
     }
 
 }
