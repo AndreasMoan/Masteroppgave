@@ -21,13 +21,13 @@ public class ScenarioHandler {
     }
     
     private void add_all_scenarios(){
-        order_sizes.add(new ArrayList<>(Arrays.asList(0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)));
+        order_sizes.add(new ArrayList<>(Arrays.asList(0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))); //
         order_sizes.add(new ArrayList<>(Arrays.asList(3, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 3, 0)));
-        order_sizes.add(new ArrayList<>(Arrays.asList(0, 3, 3, 0, 0, 0, 0, 0, 2, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)));
+        order_sizes.add(new ArrayList<>(Arrays.asList(0, 3, 3, 0, 0, 0, 0, 0, 2, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))); //
         order_sizes.add(new ArrayList<>(Arrays.asList(0, 2, 0, 0, 0, 0, 3, 0, 0, 0, 4, 0, 2, 0, 0, 2, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0)));
-        order_sizes.add(new ArrayList<>(Arrays.asList(0, 0, 3, 4, 3, 0, 0, 0, 0, 0, 2, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 0, 0)));
-        order_sizes.add(new ArrayList<>(Arrays.asList(0, 4, 0, 0, 2, 0, 0, 3, 4, 0, 0, 5, 0, 0, 0, 2, 3, 0, 0, 0, 0, 0, 3, 0, 0, 2, 0)));
-        order_sizes.add(new ArrayList<>(Arrays.asList(0, 2, 4, 3, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 4, 4, 5, 0, 0, 0)));
+        order_sizes.add(new ArrayList<>(Arrays.asList(0, 0, 3, 4, 3, 0, 0, 0, 0, 0, 2, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 0, 0))); //
+        order_sizes.add(new ArrayList<>(Arrays.asList(0, 0, 4, 0, 2, 0, 0, 3, 4, 0, 0, 0, 0, 5, 0, 2, 3, 0, 0, 0, 0, 3, 0, 0, 0, 2, 0)));
+        order_sizes.add(new ArrayList<>(Arrays.asList(0, 0, 4, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 3, 0, 4, 4, 5, 3, 0, 0, 0, 0, 3))); // 6
         order_sizes.add(new ArrayList<>(Arrays.asList(0, 0, 4, 0, 2, 4, 0, 0, 0, 2, 3, 0, 0, 0, 3, 0, 0, 4, 0, 2, 0, 0, 0, 3, 3, 0, 1)));
         order_sizes.add(new ArrayList<>(Arrays.asList(2, 3, 2, 4, 0, 0, 0, 0, 4, 3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 3, 3, 4, 5, 0, 0, 0, 0)));
         order_sizes.add(new ArrayList<>(Arrays.asList(2, 0, 0, 4, 0, 0, 3, 0, 0, 3, 3, 0, 2, 2, 0, 4, 1, 0, 4, 5, 0, 0, 4, 0, 0, 0, 4)));
@@ -41,14 +41,16 @@ public class ScenarioHandler {
         order_sizes.add(new ArrayList<>(Arrays.asList(3, 2, 3, 3, 2, 0, 2, 3, 4, 3, 5, 2, 2, 3, 0, 3, 3, 3, 4, 3, 2, 1, 0, 3, 4, 3, 0)));
         order_sizes.add(new ArrayList<>(Arrays.asList(3, 3, 4, 3, 0, 5, 3, 1, 3, 2, 3, 3, 3, 3, 3, 2, 4, 3, 3, 3, 3, 3, 4, 3, 5, 2, 0)));
         order_sizes.add(new ArrayList<>(Arrays.asList(3, 3, 4, 3, 3, 2, 2, 3, 3, 4, 2, 3, 2, 2, 4, 3, 3, 4, 3, 4, 1, 3, 3, 4, 3, 3, 3)));
+
+        order_sizes.add(new ArrayList<>(Arrays.asList(0, 0, 0, 3, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 3, 0, 4, 4, 5, 3, 0, 0, 0, 0, 3))); // 6
         
         order_deadlines.add(new ArrayList<>(Arrays.asList(0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(4, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2, 0)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(0, 3, 2, 0, 0, 0, 0, 0, 2, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(0, 3, 0, 0, 0, 0, 4, 0, 0, 0, 3, 0, 3, 0, 0, 2, 0, 0, 2, 0, 0, 3, 0, 0, 0, 0, 0)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(0, 0, 3, 2, 3, 0, 0, 0, 0, 0, 4, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 0)));
-        order_deadlines.add(new ArrayList<>(Arrays.asList(0, 4, 0, 0, 3, 0, 0, 2, 3, 0, 0, 3, 0, 0, 0, 2, 3, 0, 0, 0, 0, 0, 3, 0, 0, 3, 0)));
-        order_deadlines.add(new ArrayList<>(Arrays.asList(0, 2, 3, 3, 1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 3, 2, 0, 0, 0)));
+        order_deadlines.add(new ArrayList<>(Arrays.asList(0, 0, 4, 0, 3, 0, 0, 2, 3, 0, 0, 0, 0, 3, 0, 2, 3, 0, 0, 0, 0, 3, 0, 0, 0, 3, 0)));
+        order_deadlines.add(new ArrayList<>(Arrays.asList(0, 0, 3, 0, 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 3, 3, 2, 3, 0, 0, 0, 0, 3)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(0, 0, 3, 0, 3, 2, 0, 0, 0, 3, 3, 0, 0, 0, 3, 0, 0, 2, 0, 3, 0, 0, 0, 3, 4, 0, 3)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(3, 4, 3, 3, 0, 0, 0, 0, 3, 2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 2, 3, 3, 4, 0, 0, 0, 0)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(3, 0, 0, 3, 0, 0, 3, 0, 0, 3, 3, 0, 3, 3, 0, 3, 3, 0, 4, 3, 0, 0, 4, 0, 0, 0, 4)));
@@ -62,6 +64,8 @@ public class ScenarioHandler {
         order_deadlines.add(new ArrayList<>(Arrays.asList(3, 3, 3, 3, 3, 0, 3, 3, 3, 3, 4, 4, 4, 4, 0, 4, 4, 4, 4, 4, 4, 4, 0, 3, 3, 3, 0)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(3, 3, 3, 3, 0, 3, 3, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0)));
         order_deadlines.add(new ArrayList<>(Arrays.asList(4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4)));
+
+        order_deadlines.add(new ArrayList<>(Arrays.asList(0, 0, 0, 3, 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 3, 0, 3, 3, 2, 3, 0, 0, 0, 0, 3)));
 
         vessel_return_days.add(new ArrayList<>(Arrays.asList(4, 0, 0, 0, 0, 0)));
         vessel_return_days.add(new ArrayList<>(Arrays.asList(3, 0, 0, 0, 0, 0)));
@@ -83,6 +87,9 @@ public class ScenarioHandler {
         vessel_return_days.add(new ArrayList<>(Arrays.asList(3, 3, 2, 2, 0, 0)));
         vessel_return_days.add(new ArrayList<>(Arrays.asList(4, 4, 3, 2, 0, 0)));
         vessel_return_days.add(new ArrayList<>(Arrays.asList(4, 3, 3, 2, 3, 0)));
+
+        vessel_return_days.add(new ArrayList<>(Arrays.asList(4, 3, 0, 0, 0, 0)));
+
     }
 
     public void add_scenario_data(){

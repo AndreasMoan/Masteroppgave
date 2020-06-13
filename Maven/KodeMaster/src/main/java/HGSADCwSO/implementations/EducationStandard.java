@@ -47,12 +47,12 @@ public class EducationStandard implements EducationProtocol {
         // System.out.println("Penalized cost after vr:   " + nf.format(individual.getPenalizedCost()) + " | " + individual.getVesselTourChromosome());
 
 
-        if (individual.getVesselTourChromosome().size() > 1) {
+        if (individual.getVesselTourChromosome().size() > 1 && !isRepair) {
             new_inter_voyage_improvement_mt(individual);
         }
 
         fitnessEvaluationProtocol.evaluate(individual);
-        // System.out.println("Penalized cost after ivi:  " + nf.format(individual.getPenalizedCost()) + " | " + individual.getVesselTourChromosome());
+        // System.out.println("Penalized cost after ivi:  " + nf.format(individual.getPenalizedCost()) + " | " + ilndividual.getVesselTourChromosome());
         neighbourhoodSearch(individual);
 
         fitnessEvaluationProtocol.evaluate(individual);

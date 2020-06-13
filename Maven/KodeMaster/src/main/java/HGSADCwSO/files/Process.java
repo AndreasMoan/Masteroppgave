@@ -79,12 +79,6 @@ public class Process {
         }
     }
 
-    public void educate(Individual individual, double chance) {
-        double luck = new Random().nextDouble();
-        if (luck < chance){
-            educationProtocol.educate(individual);
-        }
-    }
 
     public void survivorSelection(ArrayList<Individual> subpopulation, ArrayList<Individual> otherSubpopulation) {
         survivorSelectionProtocol.selectSurvivors(subpopulation, otherSubpopulation, fitnessEvaluationProtocol);

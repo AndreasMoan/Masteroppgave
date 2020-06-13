@@ -88,12 +88,13 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
         double durationViolation = 0;
         double deadlineViolation = 0;
         double capacityViolation = 0;
-        double duration_spot_ship_rental = 0;
 
         for (Vessel vessel : problemData.getVessels()){
 
+            //System.out.println(vessel.getNumber()+ "   " + individual.getVesselTourChromosome().get(vessel.getNumber()));
 
-            
+
+
             ArrayList<Integer> tour = genotype.getVesselTourChromosome().get(vessel.getNumber());
 
             if (tour.size() == 0) {
@@ -109,13 +110,12 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
                 durationViolation += cachedVesselTours.get(vessel_number).get(tour)[1];
                 deadlineViolation += cachedVesselTours.get(vessel_number).get(tour)[2];
                 capacityViolation += cachedVesselTours.get(vessel_number).get(tour)[3];
-                duration_spot_ship_rental += cachedVesselTours.get(vessel_number).get(tour)[4];
             }
             else {
                 //nEvaluations += 1;
                 Graph graph = getDAG(tour);
-                doDijkstra(graph, vessel.getReturnDay()*24*multiplier, durationViolationPenalty, deadlineViolationPenalty); //TODO check correct return time
-                double[] vesselTourInfo = getTourInfo(graph, vessel.getReturnDay()*24*multiplier);
+                doDijkstra(graph, vessel.getReturnDay()*24*multiplier, durationViolationPenalty, deadlineViolationPenalty, vessel); //TODO check correct return time
+                double[] vesselTourInfo = getTourInfo(graph, vessel.getReturnDay()*24*multiplier, vessel);
 
                 if (is_finding_solution_node) {
                     Node node = get_tour_soultion_node(graph, vessel.getReturnDay()*24*multiplier);
@@ -125,8 +125,6 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
                 scheduleCost += vesselTourInfo[0];
                 durationViolation += vesselTourInfo[1];
                 deadlineViolation += vesselTourInfo[2];
-                duration_spot_ship_rental += vessel.is_spot_vessel() ? vesselTourInfo[3] : 0;
-
 
                 double capacityReqOfTour = 0;
                 for (int orderNumber : tour) {
@@ -135,7 +133,7 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
                 // System.out.println("Capacuty: " + vessel.getCapacity() + ", tour req: " + capacityReqOfTour);
                 capacityViolation += Math.max(0, capacityReqOfTour - vessel.getCapacity());
 
-                cachedVesselTours.get(vessel.getNumber()).put(tour, new double[] {vesselTourInfo[0], vesselTourInfo[1], vesselTourInfo[2], Math.max(0, capacityReqOfTour - vessel.getCapacity()), vessel.is_spot_vessel() ? vesselTourInfo[3] : 0});
+                cachedVesselTours.get(vessel.getNumber()).put(tour, new double[] {vesselTourInfo[0], vesselTourInfo[1], vesselTourInfo[2], Math.max(0, capacityReqOfTour - vessel.getCapacity())});
 
                 //System.out.println("Size of vessel tour cache for vessel number " + vessel.getNumber() + " is: " + cachedVesselTours.get(vessel.getNumber()).size());
             }
@@ -143,16 +141,9 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
 
         }
 
-        double spot_vessel_cost = duration_spot_ship_rental * problemData.getProblemInstanceParameterDouble("Hourly spot rate");
+        // System.out.println(scheduleCost + " " + durationViolation*durationViolationPenalty + " " + deadlineViolation*deadlineViolationPenalty + " " + capacityViolation*capacityViolationPenalty + " " + individual.getVesselTourChromosome());
 
-        counter++;
-        if (scheduleCost == Double.POSITIVE_INFINITY) {
-            infinity_counter ++;
-            double percentage = 100*((double) infinity_counter/ (double) counter);
-            System.out.println(infinity_counter + " " + percentage + "%");
-        }
-
-        individual.setScheduleCost(scheduleCost + spot_vessel_cost);
+        individual.setScheduleCost(scheduleCost);
         individual.setDurationViolation(durationViolation, durationViolationPenalty);
         individual.setDeadlineViolation(deadlineViolation, deadlineViolationPenalty);
         individual.setCapacityViolation(capacityViolation, capacityViolationPenalty);
@@ -167,7 +158,7 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
 
     //--------------------------------------- DIJKSTRA ----------------------------------------
 
-    private void doDijkstra(Graph graph, int vesselReturnTime, double hourlyDurationViolationPenalty, double hourlyDeadlineViolationPenalty){
+    private void doDijkstra(Graph graph, int vesselReturnTime, double hourlyDurationViolationPenalty, double hourlyDeadlineViolationPenalty, Vessel vessel){
 
         double deadlineViolationPenalty = hourlyDeadlineViolationPenalty/multiplier;
         double durationViolationPenalty = hourlyDurationViolationPenalty/multiplier;
@@ -179,14 +170,20 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
                 expand(pair.getValue(), deadlineViolationPenalty);
             }
         }
-
         for (Map.Entry<Integer, Node> entry : graph.getGraph().get(graph.getSize()-1).entrySet()){
             Node node = entry.getValue();
             double nodeTime = node.getTime();
             double nodePenalizedCost = node.getBestPenalizedCost();
-            if (nodeTime > vesselReturnTime) {
-                node.setBestPenalizedCost(nodePenalizedCost + (nodeTime - vesselReturnTime)*durationViolationPenalty );
-            }
+            double duration_violation = Math.max(0, nodeTime - vesselReturnTime);
+            double duration_violation_penalized_cost = duration_violation*durationViolationPenalty;
+            double offshore_time = nodeTime/multiplier - 16;
+            double charter_cost = vessel.is_spot_vessel() ? offshore_time*problemData.getProblemInstanceParameterDouble("Hourly spot rate") : 0;
+            node.setBestPenalizedCost(nodePenalizedCost + duration_violation_penalized_cost + charter_cost);
+
+            // System.out.println(nodeTime + " -PC: " + (node.getBestCost() + charter_cost + duration_violation_penalized_cost) + " FuelC: " + node.getBestCost() + " DurPC: " + duration_violation_penalized_cost + " CharC: " + charter_cost);
+
+            double nodeCost = node.getBestCost();
+            node.setBestCost(nodeCost + charter_cost);
         }
     }
 
@@ -212,30 +209,29 @@ public class FitnessEvaluationDAG extends FitnessEvaluationBaseline { //TODO fix
 
     //--------------------------------------- SET COST ----------------------------------------
 
-    private double[] getTourInfo(Graph graph, int vesselReturnTime) {
+    private double[] getTourInfo(Graph graph, int vesselReturnTime, Vessel vessel) {
 
         double leastPenalizedCost = Double.POSITIVE_INFINITY;
         double leastCost = Double.POSITIVE_INFINITY;
         double deadlineViolation = 0;
         double durationViolation = 0;
-        double duration_in_hours = 0;
 
         for ( Map.Entry<Integer, Node> entry : graph.getGraph().get(graph.getSize()-1).entrySet()){
 
             Node node = entry.getValue();
 
+            //System.out.println(node.getTime() + " " + node.getBestPenalizedCost() + " " + node.getBestCost());
+
             if (node.getBestPenalizedCost() < leastPenalizedCost) {
 
 
                 leastPenalizedCost = node.getBestPenalizedCost();
-
                 leastCost = node.getBestCost();
                 deadlineViolation = node.getBestTotalDeadlineViolation()/multiplier;
                 durationViolation = Math.max(0, (node.getTime() - vesselReturnTime)/multiplier);
-                duration_in_hours = ((double) node.getTime() - 8 * multiplier)/multiplier;
             }
         }
-        return new double[] {leastCost, durationViolation, deadlineViolation, duration_in_hours};
+        return new double[] {leastCost, durationViolation, deadlineViolation};
     }
 
 

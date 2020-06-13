@@ -4,10 +4,7 @@ package main.java.HGSADCwSO.files;
 import main.java.HGSADCwSO.protocols.FitnessEvaluationProtocol;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
-import java.util.Collections;
+import java.util.*;
 
 public class HGSADCwSOmain {
 
@@ -26,16 +23,16 @@ public class HGSADCwSOmain {
 
     private IO io;
 
-    public HGSADCwSOmain(int run_id, int scenario_number , String disco_param) throws IOException {
+    public HGSADCwSOmain(int run_id, int scenario_number, String disco) throws IOException {
         io = new IO(scenario_number);
-        initialize(run_id, scenario_number, disco_param);
+        initialize(run_id, scenario_number, disco);
         io.writeRunInfo(problemData);
     }
 
-    private void initialize(int run_id, int scenario_number, String disco_param) throws IOException {
+    private void initialize(int run_id, int scenario_number, String disco) throws IOException {
         startTime = System.nanoTime();
         problemData = HackInitProblemData.hack(scenario_number);
-        problemData.setHeuristicParameter("Number of time periods per hour", disco_param);
+        problemData.setHeuristicParameter("Number of time periods per hour", disco);
         this.run_id = run_id;
     }
 
@@ -48,7 +45,6 @@ public class HGSADCwSOmain {
         bestCost = Double.POSITIVE_INFINITY;
         iteration = 1;
         problemData.printProblemData();
-
 
         // System.out.println("Creating initial population...");
         createInitialPopulation();
@@ -67,7 +63,7 @@ public class HGSADCwSOmain {
     }
 
     private void createInitialPopulation() throws IOException {
-        int initialPopulationSize = problemData.getHeuristicParameterInt("Population size");
+        int initialPopulationSize = problemData.getHeuristicParameterInt("Population size")*3;
         for (int i = 0; i < initialPopulationSize; i++){
             System.out.println("======================== Iteration: " + iteration + " ========================" );
             Individual kid = process.createIndividual();

@@ -39,7 +39,7 @@ class Main
             List<Future<String>> results = executor.invokeAll(tasksList);
 
             File file;
-            String filename = "full_run_stack.txt";
+            String filename = "datastack.txt";
             try {
                 file = new File(filename);
                 if (file.createNewFile()) {
@@ -74,22 +74,23 @@ class Main
 
     private static List<Callable<String>> get_task_list() {
         List<Callable<String>> tasks_list = new ArrayList<>();
-        List<Integer> scenario_numbers = Arrays.asList(15);//0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19);
-        List<String> disco = Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10");
+        List<Integer> scenario_numbers = Arrays.asList(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19);
+        List<String> discos = Arrays.asList("4");//"15", "25", "35", "50");
+
         int run_id = 0;
         for (int scenario_number : scenario_numbers) {
-            for (String disco_param : disco) {
+            for (String disco : discos) {
                 int id = run_id;
                 Callable<String> task = () -> {
                     String s = "";
                     try {
-                        HGSADCwSOmain run = new HGSADCwSOmain(id, scenario_number, disco_param);
+                        HGSADCwSOmain run = new HGSADCwSOmain(id, scenario_number, disco);
                         s += run.fullEvolutionaryRun();
                     } catch (Exception e) {
                         e.printStackTrace();
                         s += id + "|error|error";
                     }
-                    return s + "| " + scenario_number + "|" + disco_param + "\n";//n + cap_pen + "| " + dead_pen + "| " + dur_pen + "|\n";// + "| " + min_pop_size + "| " + generation_size + "\n";
+                    return s + "| " + scenario_number + "|" + disco + "\n";
                 };
                 tasks_list.add(task);
                 run_id++;
