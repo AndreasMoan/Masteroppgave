@@ -53,7 +53,7 @@
                             </filters>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>main.java.HGSADCwSO.files.HGSADCwSOmain</mainClass>
+                                    <mainClass>main.java.HGSADCwSO.files.Main</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
